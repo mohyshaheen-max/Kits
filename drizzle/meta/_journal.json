@@ -1,0 +1,20 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1786467654838,
+      "tag": "0000_heavy_harry_osborn",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1786468239220,
+      "tag": "0001_kit_items_qty_nullable",
+      "breakpoints": true
+    }
+  ]
+}
