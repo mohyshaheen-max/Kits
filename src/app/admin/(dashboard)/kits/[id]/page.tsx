@@ -88,12 +88,21 @@ export default async function KitDetailPage({ params }: { params: Promise<{ id: 
         <div className="flex flex-col items-end gap-2">
           {kit.status !== "live" && <PublishButton kitId={kit.id} />}
           {kit.status === "live" && (
-            <form action={archiveKitAction}>
-              <input type="hidden" name="kit_id" value={kit.id} />
-              <button type="submit" className="rounded-md border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-100">
-                Archive
-              </button>
-            </form>
+            <>
+              <Link
+                href={`/s/${school?.referralSlug}/${kit.gradeId}`}
+                target="_blank"
+                className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800"
+              >
+                View storefront →
+              </Link>
+              <form action={archiveKitAction}>
+                <input type="hidden" name="kit_id" value={kit.id} />
+                <button type="submit" className="rounded-md border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-100">
+                  Archive
+                </button>
+              </form>
+            </>
           )}
         </div>
       </div>
