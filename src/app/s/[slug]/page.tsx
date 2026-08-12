@@ -3,6 +3,8 @@ import Link from "next/link";
 import { and, asc, eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { schools, grades, kits } from "@/db/schema";
+import SiteHeader from "@/components/site/header";
+import SiteFooter from "@/components/site/footer";
 
 export default async function SchoolLandingPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -26,33 +28,44 @@ export default async function SchoolLandingPage({ params }: { params: Promise<{ 
     .orderBy(asc(grades.sortOrder));
 
   return (
-    <div className="mx-auto max-w-2xl px-6 py-16">
-      <p className="text-sm font-medium text-neutral-500">KITS</p>
-      <h1 className="mt-1 text-2xl font-semibold text-neutral-900">{school.name}</h1>
-      <p className="mt-2 text-sm text-neutral-500">
-        Pick your child&apos;s grade to see this year&apos;s kit, priced and ready to order.
-      </p>
+    <div className="min-h-screen bg-neutral-50">
+      <SiteHeader />
 
-      <div className="mt-8 space-y-2">
-        {liveKits.map((k) => (
-          <Link
-            key={k.kitId}
-            href={`/s/${slug}/${k.gradeId}`}
-            className="flex items-center justify-between rounded-lg border border-neutral-200 bg-white px-5 py-4 hover:border-neutral-400"
-          >
-            <div>
-              <p className="font-medium text-neutral-900">{k.gradeLabel}</p>
-              <p className="text-xs text-neutral-400">{k.academicYear}</p>
-            </div>
-            <p className="text-sm font-semibold text-neutral-900">from {k.basePrice.toFixed(0)} EGP</p>
-          </Link>
-        ))}
-        {liveKits.length === 0 && (
-          <p className="rounded-lg border border-dashed border-neutral-300 bg-white p-6 text-center text-sm text-neutral-400">
-            No kits are published for {school.name} yet — check back soon.
-          </p>
-        )}
+      <div className="mx-auto max-w-2xl px-6 py-16">
+        <p className="text-sm font-medium text-indigo-600">{school.name}</p>
+        <h1 className="mt-1 text-2xl font-semibold text-neutral-900">Pick your child&apos;s grade</h1>
+        <p className="mt-2 text-sm text-neutral-500">
+          Each kit is itemised and priced from {school.name}&apos;s actual supply list for this year.
+        </p>
+
+        <div className="mt-8 space-y-2">
+          {liveKits.map((k) => (
+            <Link
+              key={k.kitId}
+              href={`/s/${slug}/${k.gradeId}`}
+              className="group flex items-center justify-between rounded-xl border border-neutral-200 bg-white px-5 py-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+            >
+              <div>
+                <p className="font-semibold text-neutral-900">{k.gradeLabel}</p>
+                <p className="text-xs text-neutral-400">{k.academicYear}</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-semibold text-indigo-600">from {k.basePrice.toFixed(0)} EGP</p>
+                <span className="text-neutral-300 transition group-hover:translate-x-0.5 group-hover:text-indigo-600">
+                  →
+                </span>
+              </div>
+            </Link>
+          ))}
+          {liveKits.length === 0 && (
+            <p className="rounded-xl border border-dashed border-neutral-300 bg-white p-8 text-center text-sm text-neutral-400">
+              No kits are published for {school.name} yet — check back soon.
+            </p>
+          )}
+        </div>
       </div>
+
+      <SiteFooter />
     </div>
   );
 }
