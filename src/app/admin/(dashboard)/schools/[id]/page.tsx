@@ -1,16 +1,20 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { eq, sql, asc } from "drizzle-orm";
+import { eq, sql, asc, desc } from "drizzle-orm";
 import { getDb } from "@/db";
-import { schools, grades, schoolBrandRules, schoolLists } from "@/db/schema";
+import { schools, grades, schoolBrandRules, schoolLists, schoolAdmins, listUpdateRequests } from "@/db/schema";
 import {
   createGradeAction,
   toggleGradeActiveAction,
   createBrandRuleAction,
   deleteBrandRuleAction,
+  resetSchoolAdminPasswordAction,
+  deleteSchoolAdminAction,
+  updateListUpdateRequestStatusAction,
 } from "@/lib/actions/schools";
 import { createListAction } from "@/lib/actions/lists";
 import SchoolDetailsForm from "./school-details-form";
+import PortalAccessForm from "./portal-access-form";
 import { inputClass } from "@/components/admin/form-controls";
 
 export default async function SchoolDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -22,7 +26,7 @@ export default async function SchoolDetailPage({ params }: { params: Promise<{ i
   const [school] = await db.select().from(schools).where(eq(schools.id, schoolId)).limit(1);
   if (!school) notFound();
 
-  const [schoolGrades, brandRules, lists] = await Promise.all([
+  const [schoolGrades, brandRules, lists, portalLogins, updateRequests] = await Promise.all([
     db.select().from(grades).where(eq(grades.schoolId, schoolId)).orderBy(asc(grades.sortOrder)),
     db.select().from(schoolBrandRules).where(eq(schoolBrandRules.schoolId, schoolId)),
     db
@@ -37,6 +41,19 @@ export default async function SchoolDetailPage({ params }: { params: Promise<{ i
       .from(schoolLists)
       .innerJoin(grades, eq(schoolLists.gradeId, grades.id))
       .where(eq(schoolLists.schoolId, schoolId)),
+    db.select().from(schoolAdmins).where(eq(schoolAdmins.schoolId, schoolId)),
+    db
+      .select({
+        id: listUpdateRequests.id,
+        note: listUpdateRequests.note,
+        status: listUpdateRequests.status,
+        createdAt: listUpdateRequests.createdAt,
+        gradeLabel: grades.label,
+      })
+      .from(listUpdateRequests)
+      .leftJoin(grades, eq(listUpdateRequests.gradeId, grades.id))
+      .where(eq(listUpdateRequests.schoolId, schoolId))
+      .orderBy(desc(listUpdateRequests.createdAt)),
   ]);
 
   return (
@@ -279,6 +296,138 @@ export default async function SchoolDetailPage({ params }: { params: Promise<{ i
               New list
             </button>
           </form>
+        </div>
+      </section>
+
+      <section>
+        <h2 className="text-sm font-semibold text-neutral-900">School Portal access</h2>
+        <p className="mt-1 text-xs text-neutral-500">
+          Logins for {school.name}&apos;s staff at <code>/portal/login</code> — referral link, orders and commission
+          only. They never see prices, cost, or other schools.
+        </p>
+        <div className="mt-3 overflow-hidden rounded-lg border border-neutral-200 bg-white">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-neutral-50 text-xs uppercase tracking-wide text-neutral-500">
+              <tr>
+                <th className="px-4 py-2 font-medium">Email</th>
+                <th className="px-4 py-2 font-medium">Name</th>
+                <th className="px-4 py-2 font-medium">Reset password</th>
+                <th className="px-4 py-2 font-medium"></th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-neutral-100">
+              {portalLogins.map((pa) => (
+                <tr key={pa.id}>
+                  <td className="px-4 py-2 font-medium text-neutral-900">{pa.email}</td>
+                  <td className="px-4 py-2 text-neutral-600">{pa.name ?? "—"}</td>
+                  <td className="px-4 py-2">
+                    <form action={resetSchoolAdminPasswordAction} className="flex items-center gap-2">
+                      <input type="hidden" name="id" value={pa.id} />
+                      <input type="hidden" name="school_id" value={schoolId} />
+                      <input
+                        name="password"
+                        type="text"
+                        placeholder="New password"
+                        required
+                        minLength={8}
+                        className="w-36 rounded-md border border-neutral-300 px-2 py-1 text-xs focus:border-neutral-500 focus:outline-none"
+                      />
+                      <button type="submit" className="text-xs text-neutral-500 hover:text-neutral-900">
+                        Reset
+                      </button>
+                    </form>
+                  </td>
+                  <td className="px-4 py-2 text-right">
+                    <form action={deleteSchoolAdminAction}>
+                      <input type="hidden" name="id" value={pa.id} />
+                      <input type="hidden" name="school_id" value={schoolId} />
+                      <button type="submit" className="text-xs text-neutral-500 hover:text-red-600">
+                        Remove
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+              ))}
+              {portalLogins.length === 0 && (
+                <tr>
+                  <td colSpan={4} className="px-4 py-4 text-center text-sm text-neutral-400">
+                    No portal logins yet.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+          <PortalAccessForm schoolId={schoolId} />
+        </div>
+      </section>
+
+      <section>
+        <h2 className="text-sm font-semibold text-neutral-900">List update requests</h2>
+        <div className="mt-3 overflow-hidden rounded-lg border border-neutral-200 bg-white">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-neutral-50 text-xs uppercase tracking-wide text-neutral-500">
+              <tr>
+                <th className="px-4 py-2 font-medium">Grade</th>
+                <th className="px-4 py-2 font-medium">Note</th>
+                <th className="px-4 py-2 font-medium">Status</th>
+                <th className="px-4 py-2 font-medium"></th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-neutral-100">
+              {updateRequests.map((r) => (
+                <tr key={r.id}>
+                  <td className="px-4 py-2 text-neutral-900">{r.gradeLabel ?? "All grades"}</td>
+                  <td className="px-4 py-2 text-neutral-600">{r.note}</td>
+                  <td className="px-4 py-2">
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                        r.status === "done"
+                          ? "bg-emerald-100 text-emerald-700"
+                          : r.status === "acknowledged"
+                            ? "bg-blue-100 text-blue-700"
+                            : "bg-amber-100 text-amber-700"
+                      }`}
+                    >
+                      {r.status}
+                    </span>
+                  </td>
+                  <td className="px-4 py-2 text-right">
+                    <form action={updateListUpdateRequestStatusAction} className="inline-flex gap-2">
+                      <input type="hidden" name="id" value={r.id} />
+                      <input type="hidden" name="school_id" value={schoolId} />
+                      {r.status !== "acknowledged" && (
+                        <button
+                          type="submit"
+                          name="status"
+                          value="acknowledged"
+                          className="text-xs text-neutral-500 hover:text-neutral-900"
+                        >
+                          Acknowledge
+                        </button>
+                      )}
+                      {r.status !== "done" && (
+                        <button
+                          type="submit"
+                          name="status"
+                          value="done"
+                          className="text-xs text-neutral-500 hover:text-neutral-900"
+                        >
+                          Mark done
+                        </button>
+                      )}
+                    </form>
+                  </td>
+                </tr>
+              ))}
+              {updateRequests.length === 0 && (
+                <tr>
+                  <td colSpan={4} className="px-4 py-4 text-center text-sm text-neutral-400">
+                    No requests yet.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </section>
     </div>

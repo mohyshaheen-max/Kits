@@ -370,3 +370,47 @@ export const stockMovementsRelations = relations(stockMovements, ({ one }) => ({
   sku: one(skus, { fields: [stockMovements.skuId], references: [skus.id] }),
   order: one(orders, { fields: [stockMovements.orderId], references: [orders.id] }),
 }));
+
+// ---------------------------------------------------------------------------
+// School Portal — a second, separate login for school staff. They can see
+// their own referral tools, orders and commission, but never prices, cost,
+// inventory, or other schools' data (kept out at the query layer, same as
+// the old spec's restricted-portal rule).
+// ---------------------------------------------------------------------------
+
+export const schoolAdmins = sqliteTable(
+  "school_admins",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    schoolId: integer("school_id")
+      .notNull()
+      .references(() => schools.id),
+    email: text("email").notNull(),
+    passwordHash: text("password_hash").notNull(),
+    name: text("name"),
+    createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  },
+  (t) => [uniqueIndex("school_admins_email_idx").on(t.email)]
+);
+
+export const schoolAdminsRelations = relations(schoolAdmins, ({ one }) => ({
+  school: one(schools, { fields: [schoolAdmins.schoolId], references: [schools.id] }),
+}));
+
+export const listUpdateRequests = sqliteTable("list_update_requests", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  schoolId: integer("school_id")
+    .notNull()
+    .references(() => schools.id),
+  gradeId: integer("grade_id").references(() => grades.id),
+  note: text("note").notNull(),
+  status: text("status", { enum: ["open", "acknowledged", "done"] })
+    .notNull()
+    .default("open"),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const listUpdateRequestsRelations = relations(listUpdateRequests, ({ one }) => ({
+  school: one(schools, { fields: [listUpdateRequests.schoolId], references: [schools.id] }),
+  grade: one(grades, { fields: [listUpdateRequests.gradeId], references: [grades.id] }),
+}));

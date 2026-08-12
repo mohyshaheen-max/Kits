@@ -4,8 +4,9 @@ import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getDb } from "@/db";
-import { schools, grades, schoolBrandRules } from "@/db/schema";
+import { schools, grades, schoolBrandRules, schoolAdmins, listUpdateRequests } from "@/db/schema";
 import { requireAdmin } from "@/lib/session";
+import { hashPassword } from "@/lib/auth";
 
 function slugify(input: string): string {
   return input
@@ -131,5 +132,70 @@ export async function deleteBrandRuleAction(formData: FormData) {
 
   const db = getDb();
   await db.delete(schoolBrandRules).where(eq(schoolBrandRules.id, id));
+  revalidatePath(`/admin/schools/${schoolId}`);
+}
+
+export async function createSchoolAdminAction(_prev: { error?: string } | undefined, formData: FormData) {
+  await requireAdmin();
+  const schoolId = Number(formData.get("school_id"));
+  const email = String(formData.get("email") ?? "")
+    .trim()
+    .toLowerCase();
+  const password = String(formData.get("password") ?? "");
+  const name = String(formData.get("name") ?? "").trim() || null;
+  if (!schoolId || !email || !password) {
+    return { error: "Email and password are required." };
+  }
+  if (password.length < 8) {
+    return { error: "Password must be at least 8 characters." };
+  }
+
+  const db = getDb();
+  const [existing] = await db.select().from(schoolAdmins).where(eq(schoolAdmins.email, email)).limit(1);
+  if (existing) return { error: "That email is already a portal login." };
+
+  await db.insert(schoolAdmins).values({
+    schoolId,
+    email,
+    name,
+    passwordHash: await hashPassword(password),
+  });
+
+  revalidatePath(`/admin/schools/${schoolId}`);
+  return { error: undefined };
+}
+
+export async function resetSchoolAdminPasswordAction(formData: FormData) {
+  await requireAdmin();
+  const id = Number(formData.get("id"));
+  const schoolId = Number(formData.get("school_id"));
+  const password = String(formData.get("password") ?? "");
+  if (!id || password.length < 8) return;
+
+  const db = getDb();
+  await db.update(schoolAdmins).set({ passwordHash: await hashPassword(password) }).where(eq(schoolAdmins.id, id));
+  revalidatePath(`/admin/schools/${schoolId}`);
+}
+
+export async function deleteSchoolAdminAction(formData: FormData) {
+  await requireAdmin();
+  const id = Number(formData.get("id"));
+  const schoolId = Number(formData.get("school_id"));
+  if (!id) return;
+
+  const db = getDb();
+  await db.delete(schoolAdmins).where(eq(schoolAdmins.id, id));
+  revalidatePath(`/admin/schools/${schoolId}`);
+}
+
+export async function updateListUpdateRequestStatusAction(formData: FormData) {
+  await requireAdmin();
+  const id = Number(formData.get("id"));
+  const schoolId = Number(formData.get("school_id"));
+  const status = String(formData.get("status") ?? "") as "open" | "acknowledged" | "done";
+  if (!id || !["open", "acknowledged", "done"].includes(status)) return;
+
+  const db = getDb();
+  await db.update(listUpdateRequests).set({ status }).where(eq(listUpdateRequests.id, id));
   revalidatePath(`/admin/schools/${schoolId}`);
 }

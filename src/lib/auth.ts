@@ -92,3 +92,38 @@ export async function verifySession(cookieValue: string, secret: string): Promis
   if (!adminId) return null;
   return { adminId };
 }
+
+// ---------------------------------------------------------------------------
+// School Portal session — same signed-cookie scheme, a different cookie name
+// and a "school." tag baked into the signed payload so an admin session
+// cookie can never be replayed as a school one (or vice versa) even though
+// both are signed with the same AUTH_SECRET.
+// ---------------------------------------------------------------------------
+
+export const SCHOOL_SESSION_COOKIE = "kits_school_session";
+
+export async function signSchoolSession(schoolAdminId: number, secret: string): Promise<string> {
+  const expiry = Math.floor(Date.now() / 1000) + SESSION_TTL_SECONDS;
+  const payload = `school.${schoolAdminId}.${expiry}`;
+  const key = await hmacKey(secret);
+  const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(payload));
+  return `${payload}.${toHex(sig)}`;
+}
+
+export async function verifySchoolSession(
+  cookieValue: string,
+  secret: string
+): Promise<{ schoolAdminId: number } | null> {
+  const parts = cookieValue.split(".");
+  if (parts.length !== 4 || parts[0] !== "school") return null;
+  const [, idStr, expiryStr, sigHex] = parts;
+  const payload = `school.${idStr}.${expiryStr}`;
+  const key = await hmacKey(secret);
+  const valid = await crypto.subtle.verify("HMAC", key, fromHex(sigHex) as BufferSource, new TextEncoder().encode(payload));
+  if (!valid) return null;
+  const expiry = Number(expiryStr);
+  if (!expiry || expiry < Math.floor(Date.now() / 1000)) return null;
+  const schoolAdminId = Number(idStr);
+  if (!schoolAdminId) return null;
+  return { schoolAdminId };
+}

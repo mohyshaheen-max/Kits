@@ -36,6 +36,13 @@
       "when": 1786539546496,
       "tag": "0004_general_store_orders",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1786549911591,
+      "tag": "0005_shallow_electro",
+      "breakpoints": true
     }
   ]
 }

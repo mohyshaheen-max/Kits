@@ -1,13 +1,18 @@
 # KITS Platform
 
-School supply lists → priced, publishable kits. Next.js (App Router) on
-Cloudflare Workers, D1 (SQLite at the edge) via Drizzle, R2 for files later.
+School supply lists → priced, publishable kits, sold through a school-branded
+storefront and a General Store, fulfilled through a warehouse pick/pack/label
+flow. Next.js (App Router) on Cloudflare Workers, D1 (SQLite at the edge) via
+Drizzle, R2 for files later.
 
-This build covers **Phase 1 (foundation)**, a minimal **Phase 2** (schools,
-grades, list entry), and **Phase 3, the Kit Builder** — admin kit creation
-and editing. Payments, WMS, the school portal and the parent-facing
-storefront are not built yet; the backend may end up being Shopify instead,
-so this phase deliberately stayed admin-only.
+Built so far: admin (schools, SKU catalogue, list entry, Kit Builder, orders,
+WMS pick/pack/label/delivery-run), the public storefront (school landing →
+kit configurator → checkout, plus a General Store), and the School Portal
+(`/portal`) — a separate login for school staff to see their referral link/QR,
+orders placed through it, running commission, and request list changes for
+next year. Payments are a stub (`StubProvider`, always succeeds) since a real
+provider integration was explicitly deferred; order confirmation email is
+likewise deferred.
 
 ## Stack
 
@@ -66,6 +71,25 @@ expensive one, per the spec.
    new draft for a new `academic_year`, leaving the original untouched —
    regenerating from a list is always an explicit action, never automatic.
 
+## School Portal walkthrough
+
+A school's own login (separate from `/admin` — its own signed-cookie session,
+own cookie name) lives at `/portal/login`. It can only ever see its own
+school's data — no prices, cost, inventory, or other schools.
+
+1. On a school's admin detail page (`/admin/schools/[id]`), under **School
+   Portal access**, add an email + password and share it with the school
+   directly (there's no email delivery yet, same as the seeded admin login).
+2. The school signs in at `/portal/login` and sees: their referral link and a
+   QR code for it (`/s/[slug]`), live kits per grade, orders placed through
+   that link, and running commission (`schools.commission_rate` × subtotal of
+   qualifying orders).
+3. **Request list update** lets them flag a change for next year (new item,
+   quantity, brand) as a note — it shows up under **List update requests** on
+   the school's admin page for a human to action; there's no self-serve list
+   editing, matching the spec's restriction that school staff can't touch
+   packs/products/prices themselves.
+
 ## Notes on the D1 free-tier constraints
 
 - Every list/kit page batches its reads (joins, `inArray`, grouped counts)
@@ -88,5 +112,6 @@ expensive one, per the spec.
 | `npm run db:migrate:local` | Apply migrations to the local D1 database |
 | `npm run db:seed` | Regenerate `seed-data.sql` from `scripts/seed.ts` and load it into local D1 |
 
-`npx wrangler deploy` ships it; nothing here has been deployed to a real
-Cloudflare account from this session.
+Deployed on Cloudflare Workers via the Git integration — pushes to `main`
+trigger a Workers Build automatically. `npx wrangler deploy` also works for a
+manual deploy.
