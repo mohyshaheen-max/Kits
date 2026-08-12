@@ -15,5 +15,11 @@
       "database_id": "faa33477-a5a2-40e5-9eaa-09958a1a1e67",
       "migrations_dir": "drizzle"
     }
-  ]
+  ],
+  "observability": {
+    "enabled": true,
+    "logs": {
+      "enabled": true
+    }
+  }
 }
