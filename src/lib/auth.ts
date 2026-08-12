@@ -61,7 +61,7 @@ export async function verifyPassword(password: string, stored: string): Promise<
 // ---------------------------------------------------------------------------
 
 export const SESSION_COOKIE = "kits_admin_session";
-const SESSION_TTL_SECONDS = 60 * 60 * 24 * 7; // 7 days
+export const SESSION_TTL_SECONDS = 60 * 60 * 24 * 30; // 30 days
 
 async function hmacKey(secret: string) {
   return crypto.subtle.importKey("raw", new TextEncoder().encode(secret), { name: "HMAC", hash: "SHA-256" }, false, [

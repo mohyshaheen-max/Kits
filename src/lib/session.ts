@@ -5,7 +5,7 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { admins } from "@/db/schema";
-import { SESSION_COOKIE, signSession, verifySession } from "@/lib/auth";
+import { SESSION_COOKIE, SESSION_TTL_SECONDS, signSession, verifySession } from "@/lib/auth";
 
 async function authSecret(): Promise<string> {
   const { env } = getCloudflareContext();
@@ -21,7 +21,7 @@ export async function createSession(adminId: number) {
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    maxAge: 60 * 60 * 24 * 7,
+    maxAge: SESSION_TTL_SECONDS,
   });
 }
 
