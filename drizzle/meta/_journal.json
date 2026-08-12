@@ -15,6 +15,13 @@
       "when": 1786468239220,
       "tag": "0001_kit_items_qty_nullable",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1786533659262,
+      "tag": "0002_orders_payments",
+      "breakpoints": true
     }
   ]
 }

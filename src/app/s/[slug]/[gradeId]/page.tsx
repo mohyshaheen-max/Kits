@@ -51,6 +51,7 @@ export default async function KitConfiguratorPage({
 
   return (
     <Configurator
+      kitId={kit.id}
       schoolName={school.name}
       gradeLabel={grade.label}
       kitName={kit.name}

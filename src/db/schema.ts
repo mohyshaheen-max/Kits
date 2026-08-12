@@ -229,3 +229,103 @@ export const kitItemsRelations = relations(kitItems, ({ one }) => ({
     references: [listItems.id],
   }),
 }));
+
+// ---------------------------------------------------------------------------
+// Orders — payments deferred to a developer (see src/lib/payments), but the
+// order/order-item/payment shape is built out now so that seam is a drop-in.
+// order_items snapshot qty/price at purchase time independent of what the
+// live kit_items look like later — that's what keeps an old order's price
+// intact when a school revises its list mid-season.
+// ---------------------------------------------------------------------------
+
+export const orders = sqliteTable("orders", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  orderNumber: text("order_number").notNull(),
+  schoolId: integer("school_id")
+    .notNull()
+    .references(() => schools.id),
+  gradeId: integer("grade_id")
+    .notNull()
+    .references(() => grades.id),
+  kitId: integer("kit_id")
+    .notNull()
+    .references(() => kits.id),
+  kitVersion: integer("kit_version").notNull(),
+  parentName: text("parent_name").notNull(),
+  parentPhone: text("parent_phone").notNull(),
+  parentEmail: text("parent_email"),
+  childName: text("child_name").notNull(),
+  childClass: text("child_class").notNull(),
+  subtotal: real("subtotal").notNull(),
+  labelingFee: real("labeling_fee").notNull().default(0),
+  deliveryFee: real("delivery_fee").notNull(),
+  total: real("total").notNull(),
+  deliveryMethod: text("delivery_method", { enum: ["HOME", "SCHOOL_BATCH"] }).notNull(),
+  deliveryAddress: text("delivery_address"),
+  paymentMethod: text("payment_method", { enum: ["CARD", "COD"] }).notNull(),
+  paymentStatus: text("payment_status", {
+    enum: ["pending", "paid", "pending_reconciliation", "failed", "refunded"],
+  })
+    .notNull()
+    .default("pending"),
+  fulfilmentStatus: text("fulfilment_status", {
+    enum: ["pending", "picking", "packed", "delivered", "cancelled"],
+  })
+    .notNull()
+    .default("pending"),
+  referralSchoolId: integer("referral_school_id").references(() => schools.id),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const orderItems = sqliteTable("order_items", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  orderId: integer("order_id")
+    .notNull()
+    .references(() => orders.id),
+  skuId: integer("sku_id")
+    .notNull()
+    .references(() => skus.id),
+  qty: integer("qty").notNull(),
+  unitPrice: real("unit_price").notNull(),
+  lineTotal: real("line_total").notNull(),
+  pickedQty: integer("picked_qty"),
+  substitutedSkuId: integer("substituted_sku_id").references(() => skus.id),
+  substitutionNote: text("substitution_note"),
+});
+
+export const payments = sqliteTable("payments", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  orderId: integer("order_id")
+    .notNull()
+    .references(() => orders.id),
+  method: text("method", { enum: ["CARD", "COD"] }).notNull(),
+  amount: real("amount").notNull(),
+  status: text("status", {
+    enum: ["pending", "paid", "pending_reconciliation", "reconciled", "failed", "refunded"],
+  })
+    .notNull()
+    .default("pending"),
+  providerRef: text("provider_ref"),
+  collectedAt: text("collected_at"),
+  reconciledAt: text("reconciled_at"),
+  reconciledBy: text("reconciled_by"),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const ordersRelations = relations(orders, ({ one, many }) => ({
+  school: one(schools, { fields: [orders.schoolId], references: [schools.id] }),
+  grade: one(grades, { fields: [orders.gradeId], references: [grades.id] }),
+  kit: one(kits, { fields: [orders.kitId], references: [kits.id] }),
+  items: many(orderItems),
+  payments: many(payments),
+}));
+
+export const orderItemsRelations = relations(orderItems, ({ one }) => ({
+  order: one(orders, { fields: [orderItems.orderId], references: [orders.id] }),
+  sku: one(skus, { fields: [orderItems.skuId], references: [skus.id] }),
+  substitutedSku: one(skus, { fields: [orderItems.substitutedSkuId], references: [skus.id] }),
+}));
+
+export const paymentsRelations = relations(payments, ({ one }) => ({
+  order: one(orders, { fields: [payments.orderId], references: [orders.id] }),
+}));

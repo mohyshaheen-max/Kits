@@ -1,0 +1,143 @@
+import { notFound } from "next/navigation";
+import Link from "next/link";
+import { eq, asc } from "drizzle-orm";
+import { getDb } from "@/db";
+import { orders, orderItems, skus, schools, grades, payments } from "@/db/schema";
+import { reconcilePaymentAction, updateFulfilmentStatusAction } from "@/lib/actions/orders";
+
+export default async function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const orderId = Number(id);
+  if (!orderId) notFound();
+
+  const db = getDb();
+  const [order] = await db.select().from(orders).where(eq(orders.id, orderId)).limit(1);
+  if (!order) notFound();
+
+  const [school, grade, items, orderPayments] = await Promise.all([
+    db.select().from(schools).where(eq(schools.id, order.schoolId)).then((r) => r[0]),
+    db.select().from(grades).where(eq(grades.id, order.gradeId)).then((r) => r[0]),
+    db
+      .select({ item: orderItems, sku: skus })
+      .from(orderItems)
+      .innerJoin(skus, eq(orderItems.skuId, skus.id))
+      .where(eq(orderItems.orderId, orderId)),
+    db.select().from(payments).where(eq(payments.orderId, orderId)).orderBy(asc(payments.id)),
+  ]);
+
+  return (
+    <div className="max-w-3xl space-y-6">
+      <div>
+        <Link href="/admin/orders" className="text-xs text-neutral-400 hover:text-neutral-700">
+          ← Orders
+        </Link>
+        <h1 className="mt-1 text-xl font-semibold text-neutral-900">{order.orderNumber}</h1>
+        <p className="text-sm text-neutral-500">
+          {school?.name} — {grade?.label} · {new Date(order.createdAt).toLocaleString()}
+        </p>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="rounded-lg border border-neutral-200 bg-white p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Parent</p>
+          <p className="mt-1 text-sm text-neutral-900">{order.parentName}</p>
+          <p className="text-sm text-neutral-600">{order.parentPhone}</p>
+          {order.parentEmail && <p className="text-sm text-neutral-600">{order.parentEmail}</p>}
+        </div>
+        <div className="rounded-lg border border-neutral-200 bg-white p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Child / Delivery</p>
+          <p className="mt-1 text-sm text-neutral-900">
+            {order.childName} · {order.childClass}
+          </p>
+          <p className="text-sm text-neutral-600">
+            {order.deliveryMethod === "SCHOOL_BATCH" ? "School batch" : "Home"}
+            {order.deliveryAddress ? ` — ${order.deliveryAddress}` : ""}
+          </p>
+        </div>
+      </div>
+
+      <div className="overflow-hidden rounded-lg border border-neutral-200 bg-white">
+        <div className="border-b border-neutral-200 bg-neutral-50 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">
+          Items
+        </div>
+        <ul className="divide-y divide-neutral-100">
+          {items.map(({ item, sku }) => (
+            <li key={item.id} className="flex items-center justify-between px-4 py-3 text-sm">
+              <div>
+                <p className="font-medium text-neutral-900">{sku.name}</p>
+                <p className="text-xs text-neutral-400">
+                  {sku.code} · Qty {item.qty}
+                </p>
+              </div>
+              <p className="text-neutral-600">{item.lineTotal.toFixed(2)} EGP</p>
+            </li>
+          ))}
+        </ul>
+        <div className="space-y-1 border-t border-neutral-200 bg-neutral-50 p-4 text-sm">
+          <div className="flex justify-between text-neutral-500">
+            <span>Items</span>
+            <span>{order.subtotal.toFixed(2)} EGP</span>
+          </div>
+          <div className="flex justify-between text-neutral-500">
+            <span>Labeling</span>
+            <span>{order.labelingFee.toFixed(2)} EGP</span>
+          </div>
+          <div className="flex justify-between text-neutral-500">
+            <span>Delivery</span>
+            <span>{order.deliveryFee.toFixed(2)} EGP</span>
+          </div>
+          <div className="flex justify-between border-t border-neutral-200 pt-2 text-base font-semibold text-neutral-900">
+            <span>Total</span>
+            <span>{order.total.toFixed(2)} EGP</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-lg border border-neutral-200 bg-white p-4">
+        <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Payment</p>
+        {orderPayments.map((p) => (
+          <div key={p.id} className="mt-3 flex items-center justify-between text-sm">
+            <div>
+              <p className="text-neutral-900">
+                {p.method} · {p.amount.toFixed(2)} EGP
+              </p>
+              <p className="text-xs text-neutral-400">
+                {p.status.replace("_", " ")}
+                {p.reconciledAt ? ` — reconciled ${new Date(p.reconciledAt).toLocaleString()} by ${p.reconciledBy}` : ""}
+              </p>
+            </div>
+            {p.status === "pending_reconciliation" && (
+              <form action={reconcilePaymentAction}>
+                <input type="hidden" name="payment_id" value={p.id} />
+                <input type="hidden" name="order_id" value={order.id} />
+                <button
+                  type="submit"
+                  className="rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700"
+                >
+                  Mark cash received
+                </button>
+              </form>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <div className="rounded-lg border border-neutral-200 bg-white p-4">
+        <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Fulfilment</p>
+        <form action={updateFulfilmentStatusAction} className="mt-3 flex items-center gap-2">
+          <input type="hidden" name="order_id" value={order.id} />
+          <select name="status" defaultValue={order.fulfilmentStatus} className="rounded-md border border-neutral-300 px-2 py-1.5 text-sm">
+            <option value="pending">pending</option>
+            <option value="picking">picking</option>
+            <option value="packed">packed</option>
+            <option value="delivered">delivered</option>
+            <option value="cancelled">cancelled</option>
+          </select>
+          <button type="submit" className="rounded-md bg-neutral-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-neutral-800">
+            Update
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
