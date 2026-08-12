@@ -14,8 +14,8 @@ export default async function OrderLabelPage({ params }: { params: Promise<{ id:
   if (!order) notFound();
 
   const [school, grade, lines] = await Promise.all([
-    db.select().from(schools).where(eq(schools.id, order.schoolId)).then((r) => r[0]),
-    db.select().from(grades).where(eq(grades.id, order.gradeId)).then((r) => r[0]),
+    order.schoolId ? db.select().from(schools).where(eq(schools.id, order.schoolId)).then((r) => r[0]) : undefined,
+    order.gradeId ? db.select().from(grades).where(eq(grades.id, order.gradeId)).then((r) => r[0]) : undefined,
     db.select().from(orderItems).where(eq(orderItems.orderId, orderId)),
   ]);
 
@@ -50,9 +50,10 @@ export default async function OrderLabelPage({ params }: { params: Promise<{ id:
           <p className="text-xs uppercase tracking-wide text-neutral-400">KITS</p>
           <p className="text-lg font-semibold leading-tight text-neutral-900">{order.childName}</p>
           <p className="text-sm text-neutral-700">{order.childClass}</p>
-          <p className="text-xs text-neutral-500">{school?.name}</p>
+          <p className="text-xs text-neutral-500">{school?.name ?? "General Store"}</p>
           <p className="text-xs text-neutral-400">
-            {grade?.label} · {order.orderNumber}
+            {grade ? `${grade.label} · ` : ""}
+            {order.orderNumber}
           </p>
         </div>
       ))}

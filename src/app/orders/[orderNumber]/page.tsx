@@ -14,8 +14,8 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
   if (!order) notFound();
 
   const [school, grade, items] = await Promise.all([
-    db.select().from(schools).where(eq(schools.id, order.schoolId)).then((r) => r[0]),
-    db.select().from(grades).where(eq(grades.id, order.gradeId)).then((r) => r[0]),
+    order.schoolId ? db.select().from(schools).where(eq(schools.id, order.schoolId)).then((r) => r[0]) : undefined,
+    order.gradeId ? db.select().from(grades).where(eq(grades.id, order.gradeId)).then((r) => r[0]) : undefined,
     db
       .select({ item: orderItems, sku: skus })
       .from(orderItems)
@@ -31,7 +31,7 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
 
       <h1 className="mt-6 text-2xl font-semibold text-neutral-900">{order.orderNumber}</h1>
       <p className="mt-1 text-sm text-neutral-500">
-        {school?.name} — {grade?.label}
+        {school ? `${school.name} — ${grade?.label}` : "General Store"}
       </p>
 
       <div className="mt-6 overflow-hidden rounded-lg border border-neutral-200 bg-white">

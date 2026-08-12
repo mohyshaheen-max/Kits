@@ -44,6 +44,17 @@ export default async function Home() {
         )}
       </div>
 
+      <Link
+        href="/store"
+        className="mt-4 flex items-center justify-between rounded-lg border border-dashed border-neutral-300 bg-white px-5 py-4 hover:border-neutral-400"
+      >
+        <div>
+          <p className="font-medium text-neutral-900">General Store</p>
+          <p className="text-xs text-neutral-400">Buy individual items — no school kit required</p>
+        </div>
+        <span className="text-sm text-neutral-400">→</span>
+      </Link>
+
       <p className="mt-10 text-center text-xs text-neutral-400">
         <Link href="/admin/login" className="hover:text-neutral-600 hover:underline">
           Staff sign in

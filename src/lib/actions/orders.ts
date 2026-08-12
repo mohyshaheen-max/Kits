@@ -1,6 +1,6 @@
 "use server";
 
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getDb, type Db } from "@/db";
@@ -10,7 +10,7 @@ import { generateOrderNumber } from "@/lib/orders";
 import { paymentProvider } from "@/lib/payments/provider";
 import { requireAdmin } from "@/lib/session";
 import { chunk } from "@/lib/chunk";
-import { applyStockMovement, getAvailability } from "@/lib/wms/stock";
+import { applyStockMovement, checkStockShortages, reserveStock } from "@/lib/wms/stock";
 
 export type CheckoutState = { error?: string };
 
@@ -56,17 +56,12 @@ export async function createOrderAction(_prev: CheckoutState | undefined, formDa
   // anything. Never silently drop a line — if stock can't cover it, the
   // whole order is blocked with a clear reason instead.
   const neededBySku = new Map<number, number>();
+  const skuNamesById = new Map<number, string>();
   for (const { item, sku } of includedRows) {
     neededBySku.set(sku.id, (neededBySku.get(sku.id) ?? 0) + (item.qty as number));
+    skuNamesById.set(sku.id, sku.name);
   }
-  const availability = await getAvailability(db, Array.from(neededBySku.keys()));
-  const shortages: string[] = [];
-  for (const { sku } of includedRows) {
-    if (shortages.includes(sku.name)) continue;
-    const needed = neededBySku.get(sku.id)!;
-    const avail = availability.get(sku.id)?.available ?? 0;
-    if (needed > avail) shortages.push(sku.name);
-  }
+  const shortages = await checkStockShortages(db, neededBySku, skuNamesById);
   if (shortages.length > 0) {
     return {
       error: `Out of stock: ${shortages.join(", ")}. Please contact us before ordering — we don't want to take an order we can't fulfil.`,
@@ -117,15 +112,124 @@ export async function createOrderAction(_prev: CheckoutState | undefined, formDa
     await db.insert(orderItems).values(batch);
   }
 
-  for (const [skuId, qty] of neededBySku) {
-    await applyStockMovement(db, {
-      skuId,
-      delta: qty,
-      reason: "RESERVE",
-      orderId: order.id,
-      note: `Reserved for ${orderNumber}`,
-    });
+  await reserveStock(db, order.id, orderNumber, neededBySku);
+
+  const intent = await paymentProvider.createIntent(order);
+  await db.insert(payments).values({
+    orderId: order.id,
+    method: paymentMethod,
+    amount: total,
+    status: paymentStatus,
+    providerRef: intent.ref,
+    collectedAt: paymentMethod === "CARD" ? new Date().toISOString() : null,
+  });
+
+  revalidatePath("/admin/orders");
+  redirect(`/orders/${orderNumber}`);
+}
+
+// General Store checkout — no kit, no school context. A parent just picks
+// individual SKUs. Reuses the same reservation/payment machinery as the
+// kit-based flow, per the spec's "reuse checkout, payments, WMS" directive.
+export async function createGeneralOrderAction(
+  _prev: CheckoutState | undefined,
+  formData: FormData
+): Promise<CheckoutState> {
+  let cartItems: { skuId: number; qty: number }[];
+  try {
+    cartItems = JSON.parse(String(formData.get("items_json") ?? "[]"));
+  } catch {
+    return { error: "Invalid cart." };
   }
+  cartItems = cartItems.filter((i) => i && i.skuId && i.qty > 0);
+  if (cartItems.length === 0) return { error: "Your cart is empty." };
+
+  const labeling = formData.get("labeling") === "1";
+  const parentName = String(formData.get("parent_name") ?? "").trim();
+  const parentPhone = String(formData.get("parent_phone") ?? "").trim();
+  const parentEmail = String(formData.get("parent_email") ?? "").trim() || null;
+  const childName = String(formData.get("child_name") ?? "").trim();
+  const childClass = String(formData.get("child_class") ?? "").trim();
+  const deliveryAddress = String(formData.get("delivery_address") ?? "").trim() || null;
+  const paymentMethod = String(formData.get("payment_method") ?? "") as "CARD" | "COD";
+
+  if (!parentName || !parentPhone) return { error: "Parent name and phone are required." };
+  if (!childName || !childClass) return { error: "Child's name and class are required." };
+  if (!deliveryAddress) return { error: "Delivery address is required." };
+  if (paymentMethod !== "CARD" && paymentMethod !== "COD") return { error: "Choose a payment method." };
+
+  const db: Db = getDb();
+
+  const skuRows = await db
+    .select()
+    .from(skus)
+    .where(
+      and(
+        inArray(
+          skus.id,
+          cartItems.map((i) => i.skuId)
+        ),
+        eq(skus.active, true)
+      )
+    );
+  const skuById = new Map(skuRows.map((s) => [s.id, s]));
+
+  const neededBySku = new Map<number, number>();
+  const skuNamesById = new Map<number, string>();
+  for (const { skuId, qty } of cartItems) {
+    if (!skuById.has(skuId)) return { error: "One of the items in your cart is no longer available." };
+    neededBySku.set(skuId, (neededBySku.get(skuId) ?? 0) + qty);
+    skuNamesById.set(skuId, skuById.get(skuId)!.name);
+  }
+
+  const shortages = await checkStockShortages(db, neededBySku, skuNamesById);
+  if (shortages.length > 0) {
+    return {
+      error: `Out of stock: ${shortages.join(", ")}. Please adjust your cart and try again.`,
+    };
+  }
+
+  const subtotal = Array.from(neededBySku.entries()).reduce((sum, [skuId, qty]) => sum + qty * skuById.get(skuId)!.unitPrice, 0);
+  const labelingFee = labeling ? LABELING_FEE : 0;
+  const deliveryFee = DELIVERY_FEE.HOME;
+  const total = subtotal + labelingFee + deliveryFee;
+
+  const orderNumber = generateOrderNumber();
+  const paymentStatus = paymentMethod === "COD" ? "pending_reconciliation" : "paid";
+
+  const [order] = await db
+    .insert(orders)
+    .values({
+      orderNumber,
+      mode: "GENERAL_STORE",
+      parentName,
+      parentPhone,
+      parentEmail,
+      childName,
+      childClass,
+      subtotal,
+      labelingFee,
+      deliveryFee,
+      total,
+      deliveryMethod: "HOME",
+      deliveryAddress,
+      paymentMethod,
+      paymentStatus,
+    })
+    .returning();
+
+  const itemRows = Array.from(neededBySku.entries()).map(([skuId, qty]) => ({
+    orderId: order.id,
+    skuId,
+    qty,
+    unitPrice: skuById.get(skuId)!.unitPrice,
+    lineTotal: qty * skuById.get(skuId)!.unitPrice,
+  }));
+  for (const batch of chunk(itemRows, 10)) {
+    await db.insert(orderItems).values(batch);
+  }
+
+  await reserveStock(db, order.id, orderNumber, neededBySku);
 
   const intent = await paymentProvider.createIntent(order);
   await db.insert(payments).values({

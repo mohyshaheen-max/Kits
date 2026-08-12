@@ -35,8 +35,8 @@ export default async function OrdersPage() {
       gradeLabel: grades.label,
     })
     .from(orders)
-    .innerJoin(schools, eq(orders.schoolId, schools.id))
-    .innerJoin(grades, eq(orders.gradeId, grades.id))
+    .leftJoin(schools, eq(orders.schoolId, schools.id))
+    .leftJoin(grades, eq(orders.gradeId, grades.id))
     .orderBy(desc(orders.createdAt));
 
   const pendingReconciliation = rows.filter((r) => r.paymentStatus === "pending_reconciliation").length;
@@ -75,7 +75,7 @@ export default async function OrdersPage() {
                   <p className="text-xs text-neutral-400">{new Date(o.createdAt).toLocaleString()}</p>
                 </td>
                 <td className="px-4 py-3 text-neutral-600">
-                  {o.schoolName} · {o.gradeLabel}
+                  {o.schoolName ? `${o.schoolName} · ${o.gradeLabel}` : "General Store"}
                 </td>
                 <td className="px-4 py-3 text-neutral-600">{o.childName}</td>
                 <td className="px-4 py-3 text-neutral-900">{o.total.toFixed(2)} EGP</td>

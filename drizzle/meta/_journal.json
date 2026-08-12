@@ -29,6 +29,13 @@
       "when": 1786537550483,
       "tag": "0003_wms_inventory",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1786539546496,
+      "tag": "0004_general_store_orders",
+      "breakpoints": true
     }
   ]
 }

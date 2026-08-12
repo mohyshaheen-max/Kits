@@ -8,13 +8,21 @@ import { skus, schoolBrandRules } from "@/db/schema";
 // rule (one or more brands "required OR") restricts substitutes to that
 // set. A BRAND-tier SKU with no rule at all still blocks, flagged for
 // manual review, per the spec's substitution business rule #3.
-export async function getAllowedSubstitutes(db: Db, schoolId: number, original: { id: number; category: string }) {
+export async function getAllowedSubstitutes(
+  db: Db,
+  schoolId: number | null,
+  original: { id: number; category: string }
+) {
   const [candidates, rules] = await Promise.all([
     db.select().from(skus).where(and(eq(skus.category, original.category), eq(skus.active, true))),
-    db
-      .select()
-      .from(schoolBrandRules)
-      .where(and(eq(schoolBrandRules.schoolId, schoolId), eq(schoolBrandRules.skuCategory, original.category))),
+    // General Store orders have no school context, so no brand rules apply
+    // — any active SKU in the same category is a fair substitute.
+    schoolId
+      ? db
+          .select()
+          .from(schoolBrandRules)
+          .where(and(eq(schoolBrandRules.schoolId, schoolId), eq(schoolBrandRules.skuCategory, original.category)))
+      : Promise.resolve([]),
   ]);
 
   const forbidBrands = new Set(rules.filter((r) => r.rule === "FORBID").map((r) => r.brand.toLowerCase()));

@@ -75,3 +75,33 @@ export async function getAvailability(db: Db, skuIds: number[]): Promise<Map<num
   }
   return map;
 }
+
+// Shared by every checkout path (kit-based and General Store alike). Two
+// steps, called in order: checkStockShortages() before the order row even
+// exists — reserve at checkout, not at cart, and never silently drop a line
+// that can't be covered — then reserveStock() once the order has an id.
+export async function checkStockShortages(
+  db: Db,
+  neededBySku: Map<number, number>,
+  skuNamesById: Map<number, string>
+): Promise<string[]> {
+  const availability = await getAvailability(db, Array.from(neededBySku.keys()));
+  const shortages: string[] = [];
+  for (const [skuId, needed] of neededBySku) {
+    const avail = availability.get(skuId)?.available ?? 0;
+    if (needed > avail) shortages.push(skuNamesById.get(skuId) ?? `SKU #${skuId}`);
+  }
+  return shortages;
+}
+
+export async function reserveStock(db: Db, orderId: number, orderNumber: string, neededBySku: Map<number, number>) {
+  for (const [skuId, qty] of neededBySku) {
+    await applyStockMovement(db, {
+      skuId,
+      delta: qty,
+      reason: "RESERVE",
+      orderId,
+      note: `Reserved for ${orderNumber}`,
+    });
+  }
+}

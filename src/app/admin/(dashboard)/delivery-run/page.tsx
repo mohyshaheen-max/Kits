@@ -20,15 +20,16 @@ export default async function DeliveryRunPage() {
       gradeLabel: grades.label,
     })
     .from(orders)
-    .innerJoin(schools, eq(orders.schoolId, schools.id))
-    .innerJoin(grades, eq(orders.gradeId, grades.id))
+    .leftJoin(schools, eq(orders.schoolId, schools.id))
+    .leftJoin(grades, eq(orders.gradeId, grades.id))
     .where(inArray(orders.fulfilmentStatus, ["packed"]))
     .orderBy(asc(schools.name), asc(grades.sortOrder));
 
   const grouped = new Map<string, typeof rows>();
   for (const r of rows) {
-    if (!grouped.has(r.schoolName)) grouped.set(r.schoolName, []);
-    grouped.get(r.schoolName)!.push(r);
+    const key = r.schoolName ?? "General Store";
+    if (!grouped.has(key)) grouped.set(key, []);
+    grouped.get(key)!.push(r);
   }
 
   return (

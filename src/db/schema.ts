@@ -241,16 +241,15 @@ export const kitItemsRelations = relations(kitItems, ({ one }) => ({
 export const orders = sqliteTable("orders", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   orderNumber: text("order_number").notNull(),
-  schoolId: integer("school_id")
+  mode: text("mode", { enum: ["SCHOOL_INTEGRATED", "GENERAL_STORE"] })
     .notNull()
-    .references(() => schools.id),
-  gradeId: integer("grade_id")
-    .notNull()
-    .references(() => grades.id),
-  kitId: integer("kit_id")
-    .notNull()
-    .references(() => kits.id),
-  kitVersion: integer("kit_version").notNull(),
+    .default("SCHOOL_INTEGRATED"),
+  // schoolId/gradeId/kitId/kitVersion only apply to SCHOOL_INTEGRATED orders
+  // — a General Store order isn't tied to any school's kit.
+  schoolId: integer("school_id").references(() => schools.id),
+  gradeId: integer("grade_id").references(() => grades.id),
+  kitId: integer("kit_id").references(() => kits.id),
+  kitVersion: integer("kit_version"),
   parentName: text("parent_name").notNull(),
   parentPhone: text("parent_phone").notNull(),
   parentEmail: text("parent_email"),
