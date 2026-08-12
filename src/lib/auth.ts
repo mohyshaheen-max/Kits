@@ -1,7 +1,11 @@
 // Pure crypto primitives — no I/O, safe to import from server code, route
 // handlers, or one-off scripts (e.g. the seed script) alike.
 
-const PBKDF2_ITERATIONS = 210_000;
+// Cloudflare Workers' WebCrypto implementation caps PBKDF2 at 100,000
+// iterations (throws NotSupportedError above that) — this only surfaces in
+// the real Workers runtime, not in `next dev`, which runs this code on
+// plain Node and has no such cap.
+const PBKDF2_ITERATIONS = 100_000;
 
 function toHex(bytes: ArrayBuffer | Uint8Array): string {
   const arr = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
