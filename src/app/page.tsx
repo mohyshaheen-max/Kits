@@ -3,6 +3,10 @@ import { eq, asc } from "drizzle-orm";
 import { getDb } from "@/db";
 import { schools } from "@/db/schema";
 
+// Queries D1 on every request — must not be statically prerendered at
+// build time, when no Cloudflare request context exists yet.
+export const dynamic = "force-dynamic";
+
 export default async function Home() {
   const db = getDb();
   const activeSchools = await db
