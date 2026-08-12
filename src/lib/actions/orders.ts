@@ -10,6 +10,7 @@ import { generateOrderNumber } from "@/lib/orders";
 import { paymentProvider } from "@/lib/payments/provider";
 import { requireAdmin } from "@/lib/session";
 import { chunk } from "@/lib/chunk";
+import { applyStockMovement, getAvailability } from "@/lib/wms/stock";
 
 export type CheckoutState = { error?: string };
 
@@ -50,6 +51,27 @@ export async function createOrderAction(_prev: CheckoutState | undefined, formDa
 
   const includedRows = rows.filter(({ item }) => item.qty !== null && (!item.isOptional || includedOptionalIds.has(item.id)));
   if (includedRows.length === 0) return { error: "This kit has no items to order." };
+
+  // Reserve at checkout, not at cart: check real availability before writing
+  // anything. Never silently drop a line — if stock can't cover it, the
+  // whole order is blocked with a clear reason instead.
+  const neededBySku = new Map<number, number>();
+  for (const { item, sku } of includedRows) {
+    neededBySku.set(sku.id, (neededBySku.get(sku.id) ?? 0) + (item.qty as number));
+  }
+  const availability = await getAvailability(db, Array.from(neededBySku.keys()));
+  const shortages: string[] = [];
+  for (const { sku } of includedRows) {
+    if (shortages.includes(sku.name)) continue;
+    const needed = neededBySku.get(sku.id)!;
+    const avail = availability.get(sku.id)?.available ?? 0;
+    if (needed > avail) shortages.push(sku.name);
+  }
+  if (shortages.length > 0) {
+    return {
+      error: `Out of stock: ${shortages.join(", ")}. Please contact us before ordering — we don't want to take an order we can't fulfil.`,
+    };
+  }
 
   const subtotal = includedRows.reduce((sum, { item }) => sum + (item.qty as number) * item.unitPrice, 0);
   const labelingFee = labeling && kit.labelingAvailable ? LABELING_FEE : 0;
@@ -95,6 +117,16 @@ export async function createOrderAction(_prev: CheckoutState | undefined, formDa
     await db.insert(orderItems).values(batch);
   }
 
+  for (const [skuId, qty] of neededBySku) {
+    await applyStockMovement(db, {
+      skuId,
+      delta: qty,
+      reason: "RESERVE",
+      orderId: order.id,
+      note: `Reserved for ${orderNumber}`,
+    });
+  }
+
   const intent = await paymentProvider.createIntent(order);
   await db.insert(payments).values({
     orderId: order.id,
@@ -134,6 +166,27 @@ export async function updateFulfilmentStatusAction(formData: FormData) {
   if (!orderId || !["pending", "picking", "packed", "delivered", "cancelled"].includes(status)) return;
 
   const db = getDb();
+  const [order] = await db.select().from(orders).where(eq(orders.id, orderId)).limit(1);
+  if (!order) return;
+
+  // Cancelling before pick releases the reservation instead of leaving it
+  // stuck holding stock nothing will ever collect.
+  if (status === "cancelled" && order.fulfilmentStatus !== "cancelled") {
+    const lines = await db.select().from(orderItems).where(eq(orderItems.orderId, orderId));
+    for (const line of lines) {
+      const unpicked = line.qty - (line.pickedQty ?? 0);
+      if (unpicked > 0) {
+        await applyStockMovement(db, {
+          skuId: line.skuId,
+          delta: -unpicked,
+          reason: "RELEASE",
+          orderId,
+          note: `Order cancelled`,
+        });
+      }
+    }
+  }
+
   await db.update(orders).set({ fulfilmentStatus: status }).where(eq(orders.id, orderId));
   revalidatePath(`/admin/orders/${orderId}`);
   revalidatePath("/admin/orders");

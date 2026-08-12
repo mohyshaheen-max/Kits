@@ -186,6 +186,31 @@ async function main() {
     );
   }
 
+  // ---- inventory ----------------------------------------------------------
+  // Most SKUs start well-stocked; a couple start deliberately low so the
+  // out-of-stock / substitution flow has something to exercise without
+  // needing to manually drain stock first.
+  const LOW_STOCK_CODES = new Set(["CALC-CASIO-FX991ESPLUS", "GLUE-STICK-PRITT"]);
+  for (const s of skus) {
+    const onHand = LOW_STOCK_CODES.has(s.code) ? 2 : 200;
+    lines.push(
+      insertRaw("stock_movements", {
+        sku_id: skuSub(s.code),
+        delta: val(onHand),
+        reason: val("PURCHASE"),
+        note: val("Initial stock"),
+      })
+    );
+    lines.push(
+      insertRaw("inventory", {
+        sku_id: skuSub(s.code),
+        on_hand: val(onHand),
+        reserved: val(0),
+        reorder_point: val(LOW_STOCK_CODES.has(s.code) ? 10 : 20),
+      })
+    );
+  }
+
   // ---- brand rules --------------------------------------------------------
   const brandRules: { school: string; category: string; brand: string; rule: "REQUIRE" | "FORBID"; note?: string }[] = [
     { school: "Metropolitan International School", category: "Paint", brand: "Jovi", rule: "FORBID", note: "KG1 — parents reported allergic reactions" },

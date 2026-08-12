@@ -329,3 +329,45 @@ export const orderItemsRelations = relations(orderItems, ({ one }) => ({
 export const paymentsRelations = relations(payments, ({ one }) => ({
   order: one(orders, { fields: [payments.orderId], references: [orders.id] }),
 }));
+
+// ---------------------------------------------------------------------------
+// Inventory — on_hand/reserved are caches. Non-negotiable: never
+// `UPDATE inventory SET on_hand`. Every change goes through
+// applyStockMovement (src/lib/wms/stock.ts), which inserts the movement row
+// and adjusts the cached balance in the same breath. When something goes
+// wrong mid-season, stock_movements is how you find out what happened.
+// ---------------------------------------------------------------------------
+
+export const inventory = sqliteTable("inventory", {
+  skuId: integer("sku_id")
+    .primaryKey()
+    .references(() => skus.id),
+  onHand: integer("on_hand").notNull().default(0),
+  reserved: integer("reserved").notNull().default(0),
+  reorderPoint: integer("reorder_point").notNull().default(0),
+  lastCountedAt: text("last_counted_at"),
+});
+
+export const stockMovements = sqliteTable("stock_movements", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  skuId: integer("sku_id")
+    .notNull()
+    .references(() => skus.id),
+  delta: integer("delta").notNull(),
+  reason: text("reason", {
+    enum: ["PURCHASE", "RESERVE", "RELEASE", "PICK", "ADJUSTMENT", "RETURN"],
+  }).notNull(),
+  orderId: integer("order_id").references(() => orders.id),
+  note: text("note"),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  createdBy: text("created_by"),
+});
+
+export const inventoryRelations = relations(inventory, ({ one }) => ({
+  sku: one(skus, { fields: [inventory.skuId], references: [skus.id] }),
+}));
+
+export const stockMovementsRelations = relations(stockMovements, ({ one }) => ({
+  sku: one(skus, { fields: [stockMovements.skuId], references: [skus.id] }),
+  order: one(orders, { fields: [stockMovements.orderId], references: [orders.id] }),
+}));

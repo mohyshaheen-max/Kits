@@ -25,16 +25,39 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
     db.select().from(payments).where(eq(payments.orderId, orderId)).orderBy(asc(payments.id)),
   ]);
 
+  const substituteIds = items.map(({ item }) => item.substitutedSkuId).filter((id): id is number => id !== null);
+  const substituteSkus = substituteIds.length
+    ? Object.fromEntries((await db.select().from(skus)).map((s) => [s.id, s]))
+    : {};
+
   return (
     <div className="max-w-3xl space-y-6">
       <div>
-        <Link href="/admin/orders" className="text-xs text-neutral-400 hover:text-neutral-700">
-          ← Orders
-        </Link>
-        <h1 className="mt-1 text-xl font-semibold text-neutral-900">{order.orderNumber}</h1>
-        <p className="text-sm text-neutral-500">
-          {school?.name} — {grade?.label} · {new Date(order.createdAt).toLocaleString()}
-        </p>
+        <div className="flex items-start justify-between">
+          <div>
+            <Link href="/admin/orders" className="text-xs text-neutral-400 hover:text-neutral-700">
+              ← Orders
+            </Link>
+            <h1 className="mt-1 text-xl font-semibold text-neutral-900">{order.orderNumber}</h1>
+            <p className="text-sm text-neutral-500">
+              {school?.name} — {grade?.label} · {new Date(order.createdAt).toLocaleString()}
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Link
+              href={`/admin/orders/${order.id}/label`}
+              className="rounded-md border border-neutral-300 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-100"
+            >
+              Labels
+            </Link>
+            <Link
+              href={`/admin/orders/${order.id}/pack`}
+              className="rounded-md bg-neutral-900 px-3 py-2 text-sm font-medium text-white hover:bg-neutral-800"
+            >
+              Pick &amp; pack →
+            </Link>
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -62,14 +85,25 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
         </div>
         <ul className="divide-y divide-neutral-100">
           {items.map(({ item, sku }) => (
-            <li key={item.id} className="flex items-center justify-between px-4 py-3 text-sm">
-              <div>
-                <p className="font-medium text-neutral-900">{sku.name}</p>
-                <p className="text-xs text-neutral-400">
-                  {sku.code} · Qty {item.qty}
-                </p>
+            <li key={item.id} className="px-4 py-3 text-sm">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium text-neutral-900">{sku.name}</p>
+                  <p className="text-xs text-neutral-400">
+                    {sku.code} · Qty {item.qty}
+                    {item.pickedQty !== null && item.pickedQty !== item.qty && (
+                      <span className="ml-1 text-amber-600">(picked {item.pickedQty})</span>
+                    )}
+                  </p>
+                </div>
+                <p className="text-neutral-600">{item.lineTotal.toFixed(2)} EGP</p>
               </div>
-              <p className="text-neutral-600">{item.lineTotal.toFixed(2)} EGP</p>
+              {item.substitutedSkuId && (
+                <p className="mt-1 text-xs text-blue-700">
+                  Substituted with {substituteSkus[item.substitutedSkuId]?.name ?? `SKU #${item.substitutedSkuId}`}
+                  {item.substitutionNote ? ` — ${item.substitutionNote}` : ""}
+                </p>
+              )}
             </li>
           ))}
         </ul>
