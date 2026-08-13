@@ -20,6 +20,9 @@ export default function StoreCart({ items, account }: { items: Sku[]; account: A
   const [step, setStep] = useState<"browse" | "checkout">("browse");
   const [cart, setCart] = useState<Record<number, number>>({});
   const [labeling, setLabeling] = useState(false);
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("");
+  const [sortBy, setSortBy] = useState<"name" | "price-asc" | "price-desc">("name");
 
   const [parentName, setParentName] = useState(account?.name ?? "");
   const [parentPhone, setParentPhone] = useState(account?.phone ?? "");
@@ -51,14 +54,47 @@ export default function StoreCart({ items, account }: { items: Sku[]; account: A
     undefined
   );
 
+  const categories = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const item of items) counts.set(item.category, (counts.get(item.category) ?? 0) + 1);
+    return Array.from(counts.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+  }, [items]);
+
+  const filtersActive = search.trim().length > 0 || category !== "" || sortBy !== "name";
+
+  const filteredItems = useMemo(() => {
+    let result = items;
+    if (category) result = result.filter((i) => i.category === category);
+    const q = search.trim().toLowerCase();
+    if (q) {
+      result = result.filter(
+        (i) => i.name.toLowerCase().includes(q) || (i.brand ?? "").toLowerCase().includes(q)
+      );
+    }
+    const sorted = [...result];
+    if (sortBy === "name") sorted.sort((a, b) => a.name.localeCompare(b.name));
+    else if (sortBy === "price-asc") sorted.sort((a, b) => a.unitPrice - b.unitPrice);
+    else if (sortBy === "price-desc") sorted.sort((a, b) => b.unitPrice - a.unitPrice);
+    return sorted;
+  }, [items, category, search, sortBy]);
+
+  // Grouped-by-category browse view only in the neutral default state; any
+  // active search, sort, or category filter collapses to a flat result list.
   const grouped = useMemo(() => {
+    if (filtersActive) return [] as [string, Sku[]][];
     const map = new Map<string, Sku[]>();
-    for (const item of items) {
+    for (const item of filteredItems) {
       if (!map.has(item.category)) map.set(item.category, []);
       map.get(item.category)!.push(item);
     }
     return Array.from(map.entries());
-  }, [items]);
+  }, [filteredItems, filtersActive]);
+
+  function clearFilters() {
+    setSearch("");
+    setCategory("");
+    setSortBy("name");
+  }
 
   const cartLines = useMemo(
     () =>
@@ -240,45 +276,91 @@ export default function StoreCart({ items, account }: { items: Sku[]; account: A
           <h1 className="mt-1 font-display text-2xl font-semibold text-ink-900">Buy items individually</h1>
           <p className="mt-1 text-sm text-ink-600">No school kit required.</p>
 
-          <div className="mt-6 space-y-6">
-            {grouped.map(([category, categoryItems]) => (
-              <div key={category}>
-                <h2 className="mb-3 text-xs font-medium tracking-wide text-ink-400 uppercase">{category}</h2>
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  {categoryItems.map((item) => (
-                    <div
-                      key={item.id}
-                      className="flex items-center justify-between rounded-md border border-line bg-surface p-4"
-                    >
-                      <div>
-                        <p className="text-sm font-medium text-ink-900">{item.name}</p>
-                        <p className="text-xs text-ink-400">
-                          <span className="font-mono">{item.unitPrice.toFixed(2)} EGP</span>
-                          {item.brand ? ` · ${item.brand}` : ""}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setQty(item.id, (cart[item.id] ?? 0) - 1)}
-                          className="h-7 w-7 rounded-sm border border-line text-sm text-ink-600 hover:bg-canvas"
-                        >
-                          −
-                        </button>
-                        <span className="w-6 text-center font-mono text-sm text-ink-900">{cart[item.id] ?? 0}</span>
-                        <button
-                          type="button"
-                          onClick={() => setQty(item.id, (cart[item.id] ?? 0) + 1)}
-                          className="h-7 w-7 rounded-sm border border-line text-sm text-ink-600 hover:bg-canvas"
-                        >
-                          +
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <input
+              type="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search items..."
+              className="flex-1 rounded-sm border border-line px-3 py-2 text-sm focus:outline-2 focus:outline-offset-1 focus:outline-teal-500"
+            />
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+              className="rounded-sm border border-line px-3 py-2 text-sm focus:outline-2 focus:outline-offset-1 focus:outline-teal-500"
+            >
+              <option value="name">Sort: Name A–Z</option>
+              <option value="price-asc">Sort: Price low to high</option>
+              <option value="price-desc">Sort: Price high to low</option>
+            </select>
+          </div>
+
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => setCategory("")}
+              className={`rounded-sm px-3 py-1.5 text-xs font-medium ${
+                category === "" ? "bg-teal-100 text-teal-800" : "border border-line text-ink-600 hover:bg-teal-050"
+              }`}
+            >
+              All <span className="font-mono">({items.length})</span>
+            </button>
+            {categories.map(([catName, count]) => (
+              <button
+                key={catName}
+                type="button"
+                onClick={() => setCategory(catName)}
+                className={`rounded-sm px-3 py-1.5 text-xs font-medium ${
+                  category === catName
+                    ? "bg-teal-100 text-teal-800"
+                    : "border border-line text-ink-600 hover:bg-teal-050"
+                }`}
+              >
+                {catName} <span className="font-mono">({count})</span>
+              </button>
             ))}
+          </div>
+
+          <div className="mt-4 flex items-center justify-between">
+            <p className="text-xs text-ink-400">
+              <span className="font-mono">{filteredItems.length}</span> item{filteredItems.length === 1 ? "" : "s"}
+            </p>
+            {filtersActive && (
+              <button type="button" onClick={clearFilters} className="text-xs font-medium text-teal-700 hover:underline">
+                Clear filters
+              </button>
+            )}
+          </div>
+
+          <div className="mt-4 space-y-6">
+            {filteredItems.length === 0 && (
+              <div className="rounded-md border border-line bg-surface p-8 text-center">
+                <p className="text-sm font-medium text-ink-900">No items match your search.</p>
+                <p className="mt-1 text-sm text-ink-400">Try a different term or clear your filters.</p>
+                <button type="button" onClick={clearFilters} className="mt-3 text-sm font-medium text-teal-700 hover:underline">
+                  Clear filters
+                </button>
+              </div>
+            )}
+
+            {filtersActive
+              ? filteredItems.length > 0 && (
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    {filteredItems.map((item) => (
+                      <StoreItemRow key={item.id} item={item} qty={cart[item.id] ?? 0} onQtyChange={setQty} showCategory />
+                    ))}
+                  </div>
+                )
+              : grouped.map(([catName, categoryItems]) => (
+                  <div key={catName}>
+                    <h2 className="mb-3 text-xs font-medium tracking-wide text-ink-400 uppercase">{catName}</h2>
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      {categoryItems.map((item) => (
+                        <StoreItemRow key={item.id} item={item} qty={cart[item.id] ?? 0} onQtyChange={setQty} />
+                      ))}
+                    </div>
+                  </div>
+                ))}
           </div>
         </div>
 
@@ -364,6 +446,48 @@ export default function StoreCart({ items, account }: { items: Sku[]; account: A
         </div>
       </div>
       <SiteFooter />
+    </div>
+  );
+}
+
+function StoreItemRow({
+  item,
+  qty,
+  onQtyChange,
+  showCategory,
+}: {
+  item: Sku;
+  qty: number;
+  onQtyChange: (skuId: number, qty: number) => void;
+  showCategory?: boolean;
+}) {
+  return (
+    <div className="flex items-center justify-between rounded-md border border-line bg-surface p-4">
+      <div>
+        <p className="text-sm font-medium text-ink-900">{item.name}</p>
+        <p className="text-xs text-ink-400">
+          <span className="font-mono">{item.unitPrice.toFixed(2)} EGP</span>
+          {showCategory ? ` · ${item.category}` : ""}
+          {item.brand ? ` · ${item.brand}` : ""}
+        </p>
+      </div>
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => onQtyChange(item.id, qty - 1)}
+          className="h-7 w-7 rounded-sm border border-line text-sm text-ink-600 hover:bg-canvas"
+        >
+          −
+        </button>
+        <span className="w-6 text-center font-mono text-sm text-ink-900">{qty}</span>
+        <button
+          type="button"
+          onClick={() => onQtyChange(item.id, qty + 1)}
+          className="h-7 w-7 rounded-sm border border-line text-sm text-ink-600 hover:bg-canvas"
+        >
+          +
+        </button>
+      </div>
     </div>
   );
 }
