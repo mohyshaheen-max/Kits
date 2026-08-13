@@ -6,13 +6,37 @@ flow. Next.js (App Router) on Cloudflare Workers, D1 (SQLite at the edge) via
 Drizzle, R2 for files later.
 
 Built so far: admin (schools, SKU catalogue, list entry, Kit Builder, orders,
-WMS pick/pack/label/delivery-run), the public storefront (school landing →
-kit configurator → checkout, plus a General Store), and the School Portal
-(`/portal`) — a separate login for school staff to see their referral link/QR,
-orders placed through it, running commission, and request list changes for
-next year. Payments are a stub (`StubProvider`, always succeeds) since a real
-provider integration was explicitly deferred; order confirmation email is
-likewise deferred.
+returns, support, FAQ, WMS pick/pack/label/delivery-run), the public
+storefront (school landing → kit configurator → checkout, plus a General
+Store), the School Portal (`/portal`) — a separate login for school staff to
+see their referral link/QR, orders placed through it, running commission,
+and request list changes for next year — and customer accounts (`/account`)
+with saved children/addresses, order history, self-service cancellation,
+returns, and support tickets. Payments are a stub (`StubProvider`, always
+succeeds) since a real provider integration was explicitly deferred; order
+confirmation email is likewise deferred.
+
+## Customer-facing features
+
+- **Accounts** (`/account`) — optional at checkout; guest checkout still
+  works. Logging in saves children (name/school/grade/class) and delivery
+  addresses for reuse at checkout, and shows order history. Orders are
+  attached to the account by re-deriving the session server-side in the
+  checkout actions — never from client-submitted form data.
+- **Cancellation** — an account holder can cancel their own order while
+  it's still pending/picking, from the order confirmation page. Releases
+  reserved stock and logs a refund if the order had already been paid.
+- **Returns** (only after delivery) — a customer selects items/qty, a
+  reason, and an optional message. Admin reviews under `/admin/returns`,
+  grades each item good/damaged/rejected, and approves with a refund
+  amount or declines. A "good" item restocks through the same
+  `applyStockMovement` audit trail as everything else in the WMS.
+- **Support tickets + FAQ** — guests and customers can open a ticket at
+  `/support` (optionally referencing an order via a "Need help with this
+  order?" link). Logged-in customers see their tickets and reply at
+  `/account/support`; admin runs the inbox at `/admin/support`, including
+  internal notes never shown to the customer. FAQ content is managed at
+  `/admin/faq` and shown publicly at `/faq`.
 
 ## Stack
 

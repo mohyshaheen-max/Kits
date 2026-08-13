@@ -29,6 +29,9 @@ export default async function AccountDashboardLayout({ children }: { children: R
           <Link href="/account/orders" className="pb-3 hover:text-neutral-900">
             Orders
           </Link>
+          <Link href="/account/support" className="pb-3 hover:text-neutral-900">
+            Support
+          </Link>
         </nav>
         {children}
       </div>

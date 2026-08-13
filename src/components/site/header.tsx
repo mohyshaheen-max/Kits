@@ -17,6 +17,9 @@ export default function SiteHeader({ customerName }: { customerName?: string | n
           <Link href="/store" className="hover:text-neutral-900">
             Store
           </Link>
+          <Link href="/faq" className="hover:text-neutral-900">
+            Help
+          </Link>
           {customerName ? (
             <Link href="/account" className="hover:text-neutral-900">
               {customerName.split(" ")[0]} · My account

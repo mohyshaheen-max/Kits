@@ -130,15 +130,23 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
           </div>
         )}
 
-        {canCancel && <CancelOrderButton orderId={order.id} />}
-        {canReturn && (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {canCancel && <CancelOrderButton orderId={order.id} />}
+          {canReturn && (
+            <Link
+              href={`/orders/${order.orderNumber}/return`}
+              className="inline-block rounded-full border border-neutral-300 bg-white px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50"
+            >
+              Request a return
+            </Link>
+          )}
           <Link
-            href={`/orders/${order.orderNumber}/return`}
-            className="mt-3 inline-block rounded-full border border-neutral-300 bg-white px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50"
+            href={`/support?order=${order.orderNumber}`}
+            className="inline-block rounded-full border border-neutral-300 bg-white px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50"
           >
-            Request a return
+            Need help with this order?
           </Link>
-        )}
+        </div>
       </div>
       <SiteFooter />
     </div>

@@ -544,3 +544,72 @@ export const refundLogsRelations = relations(refundLogs, ({ one }) => ({
   order: one(orders, { fields: [refundLogs.orderId], references: [orders.id] }),
   return: one(returns, { fields: [refundLogs.returnId], references: [returns.id] }),
 }));
+
+// ---------------------------------------------------------------------------
+// Support tickets + FAQ. A ticket can belong to a customer account or be a
+// guest submission (customerId null) — guests get a "we've got it" message
+// at submit time rather than a self-service view, since there's no
+// verified identity to gate a thread behind. Every reply, customer or
+// admin, is one row in support_messages; is_internal_note marks the
+// admin-only ones (never shown to the customer).
+// ---------------------------------------------------------------------------
+
+export const supportTickets = sqliteTable("support_tickets", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  customerId: integer("customer_id").references(() => customers.id),
+  guestName: text("guest_name"),
+  guestEmail: text("guest_email"),
+  orderId: integer("order_id").references(() => orders.id),
+  subject: text("subject").notNull(),
+  status: text("status", { enum: ["open", "in_progress", "resolved", "closed"] })
+    .notNull()
+    .default("open"),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const supportMessages = sqliteTable("support_messages", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  ticketId: integer("ticket_id")
+    .notNull()
+    .references(() => supportTickets.id),
+  author: text("author", { enum: ["customer", "admin"] }).notNull(),
+  authorName: text("author_name"),
+  body: text("body").notNull(),
+  isInternalNote: integer("is_internal_note", { mode: "boolean" }).notNull().default(false),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const faqCategories = sqliteTable("faq_categories", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  name: text("name").notNull(),
+  sortOrder: integer("sort_order").notNull().default(0),
+});
+
+export const faqEntries = sqliteTable("faq_entries", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  categoryId: integer("category_id")
+    .notNull()
+    .references(() => faqCategories.id),
+  question: text("question").notNull(),
+  answer: text("answer").notNull(),
+  sortOrder: integer("sort_order").notNull().default(0),
+});
+
+export const supportTicketsRelations = relations(supportTickets, ({ one, many }) => ({
+  customer: one(customers, { fields: [supportTickets.customerId], references: [customers.id] }),
+  order: one(orders, { fields: [supportTickets.orderId], references: [orders.id] }),
+  messages: many(supportMessages),
+}));
+
+export const supportMessagesRelations = relations(supportMessages, ({ one }) => ({
+  ticket: one(supportTickets, { fields: [supportMessages.ticketId], references: [supportTickets.id] }),
+}));
+
+export const faqCategoriesRelations = relations(faqCategories, ({ many }) => ({
+  entries: many(faqEntries),
+}));
+
+export const faqEntriesRelations = relations(faqEntries, ({ one }) => ({
+  category: one(faqCategories, { fields: [faqEntries.categoryId], references: [faqCategories.id] }),
+}));

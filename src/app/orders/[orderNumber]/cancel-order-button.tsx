@@ -7,7 +7,7 @@ export default function CancelOrderButton({ orderId }: { orderId: number }) {
   const [state, formAction, pending] = useActionState(cancelOrderAction, undefined);
 
   return (
-    <form action={formAction} className="mt-3">
+    <form action={formAction}>
       <input type="hidden" name="order_id" value={orderId} />
       {state?.error && <p className="mb-2 text-sm text-red-600">{state.error}</p>}
       <button

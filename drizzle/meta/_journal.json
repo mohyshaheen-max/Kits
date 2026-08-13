@@ -57,6 +57,13 @@
       "when": 1786611504792,
       "tag": "0007_bright_thaddeus_ross",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1786612211706,
+      "tag": "0008_mighty_guardian",
+      "breakpoints": true
     }
   ]
 }
