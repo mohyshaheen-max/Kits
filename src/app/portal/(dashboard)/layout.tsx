@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { schools } from "@/db/schema";
@@ -21,7 +22,7 @@ export default async function PortalDashboardLayout({ children }: { children: Re
       <div className="flex">
         <aside className="sticky top-0 flex h-screen w-56 shrink-0 flex-col border-r border-line bg-surface">
           <div className="border-b border-line px-4 py-4">
-            <span className="font-display text-sm font-bold tracking-tight text-ink-900">KiTS Portal</span>
+            <Image src="/logo-mark-teal.png" alt="KiTS" width={128} height={62} className="h-6 w-auto" />
             {school && <p className="mt-0.5 truncate text-xs text-ink-400">{school.name}</p>}
           </div>
           <nav className="flex-1 space-y-1 px-2 py-4">

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export default function SiteHeader({ customerName }: { customerName?: string | null }) {
   return (
@@ -8,7 +9,7 @@ export default function SiteHeader({ customerName }: { customerName?: string | n
     >
       <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
         <Link href="/" className="flex items-center gap-2">
-          <span className="font-display text-xl font-bold tracking-tight">KiTS</span>
+          <Image src="/logo-mark.png" alt="KiTS" width={128} height={62} className="h-7 w-auto" priority />
         </Link>
         <nav className="flex items-center gap-6 text-sm font-medium">
           <Link href="/" className="hover:opacity-80">

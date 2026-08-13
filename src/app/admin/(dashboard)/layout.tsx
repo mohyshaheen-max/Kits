@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { requireAdmin } from "@/lib/session";
 import { logoutAction } from "@/lib/actions/auth";
 
@@ -23,7 +24,8 @@ export default async function AdminDashboardLayout({ children }: { children: Rea
       <div className="flex">
         <aside className="sticky top-0 flex h-screen w-56 shrink-0 flex-col border-r border-line bg-surface">
           <div className="border-b border-line px-4 py-4">
-            <span className="font-display text-sm font-bold tracking-tight text-ink-900">KiTS Admin</span>
+            <Image src="/logo-mark-teal.png" alt="KiTS" width={128} height={62} className="h-6 w-auto" />
+            <p className="mt-0.5 text-xs font-medium text-ink-400">Admin</p>
           </div>
           <nav className="flex-1 space-y-1 px-2 py-4">
             {NAV.map((item) => (
