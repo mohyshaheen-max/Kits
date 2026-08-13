@@ -26,12 +26,12 @@ export default async function RequestReturnPage({ params }: { params: Promise<{ 
     .where(eq(orderItems.orderId, order.id));
 
   return (
-    <div className="min-h-screen bg-neutral-50">
+    <div className="min-h-screen bg-canvas">
       <SiteHeader customerName={customer.name} />
       <div className="mx-auto max-w-xl px-6 py-16">
-        <p className="text-sm text-neutral-500">{order.orderNumber}</p>
-        <h1 className="mt-1 text-2xl font-semibold text-neutral-900">Request a return</h1>
-        <p className="mt-1 text-sm text-neutral-500">Select the items you&apos;d like to return and tell us why.</p>
+        <p className="text-sm text-ink-600">{order.orderNumber}</p>
+        <h1 className="mt-1 font-display text-2xl font-semibold text-ink-900">Request a return</h1>
+        <p className="mt-1 text-sm text-ink-600">Select the items you&apos;d like to return and tell us why.</p>
 
         <ReturnForm
           orderId={order.id}

@@ -3,14 +3,14 @@ import RegisterForm from "./register-form";
 
 export default function AccountRegisterPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-neutral-50 px-4">
-      <div className="w-full max-w-sm rounded-xl border border-neutral-200 bg-white p-8 shadow-sm">
-        <h1 className="text-lg font-semibold text-neutral-900">Create an account</h1>
-        <p className="mt-1 text-sm text-neutral-500">Save children and addresses, and track your orders.</p>
+    <div className="flex min-h-screen items-center justify-center bg-canvas px-4">
+      <div className="w-full max-w-sm rounded-md border border-line bg-surface p-8">
+        <h1 className="font-display text-lg font-semibold text-ink-900">Create an account</h1>
+        <p className="mt-1 text-sm text-ink-600">Save children and addresses, and track your orders.</p>
         <RegisterForm />
-        <p className="mt-4 text-center text-sm text-neutral-500">
+        <p className="mt-4 text-center text-sm text-ink-600">
           Already have an account?{" "}
-          <Link href="/account/login" className="font-medium text-indigo-600 hover:underline">
+          <Link href="/account/login" className="font-medium text-teal-700 hover:underline">
             Sign in
           </Link>
         </p>

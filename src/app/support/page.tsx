@@ -14,13 +14,13 @@ export default async function SupportPage({
   const customer = await getCurrentCustomer();
 
   return (
-    <div className="min-h-screen bg-neutral-50">
+    <div className="min-h-screen bg-canvas">
       <SiteHeader customerName={customer?.name} />
       <div className="mx-auto max-w-xl px-6 py-16">
-        <h1 className="text-2xl font-semibold text-neutral-900">Contact support</h1>
-        <p className="mt-1 text-sm text-neutral-500">
+        <h1 className="font-display text-2xl font-semibold text-ink-900">Contact support</h1>
+        <p className="mt-1 text-sm text-ink-600">
           Tell us what&apos;s going on and we&apos;ll get back to you. Check the{" "}
-          <a href="/faq" className="text-indigo-600 hover:underline">
+          <a href="/faq" className="text-teal-700 hover:underline">
             FAQ
           </a>{" "}
           first — your answer might already be there.
@@ -33,8 +33,8 @@ export default async function SupportPage({
           defaultOrderNumber={order ?? ""}
         />
 
-        <div className="mt-8 rounded-xl border border-neutral-200 bg-white p-5 text-sm text-neutral-600 shadow-sm">
-          <p className="font-medium text-neutral-900">Other ways to reach us</p>
+        <div className="mt-8 rounded-md border border-line bg-surface p-5 text-sm text-ink-600">
+          <p className="font-medium text-ink-900">Other ways to reach us</p>
           <p className="mt-2">Email: support@kits.example</p>
           <p>WhatsApp: +20 100 000 0000</p>
           <p>Hours: Sunday–Thursday, 9am–5pm</p>

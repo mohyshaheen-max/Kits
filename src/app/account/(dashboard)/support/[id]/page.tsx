@@ -8,10 +8,10 @@ import ReplyForm from "./reply-form";
 export const dynamic = "force-dynamic";
 
 const STATUS_STYLE: Record<string, string> = {
-  open: "bg-amber-100 text-amber-700",
-  in_progress: "bg-blue-100 text-blue-700",
-  resolved: "bg-emerald-100 text-emerald-700",
-  closed: "bg-neutral-100 text-neutral-500",
+  open: "bg-warn-bg text-warn",
+  in_progress: "bg-teal-100 text-teal-800",
+  resolved: "bg-ok-bg text-ok",
+  closed: "bg-canvas text-ink-400",
 };
 
 export default async function AccountTicketPage({ params }: { params: Promise<{ id: string }> }) {
@@ -34,8 +34,8 @@ export default async function AccountTicketPage({ params }: { params: Promise<{ 
   return (
     <div className="max-w-2xl">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-neutral-900">{ticket.subject}</h1>
-        <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_STYLE[ticket.status]}`}>
+        <h1 className="font-display text-xl font-semibold text-ink-900">{ticket.subject}</h1>
+        <span className={`rounded-sm px-2 py-0.5 text-xs font-medium ${STATUS_STYLE[ticket.status]}`}>
           {ticket.status.replace("_", " ")}
         </span>
       </div>
@@ -44,15 +44,15 @@ export default async function AccountTicketPage({ params }: { params: Promise<{ 
         {visibleMessages.map((m) => (
           <div
             key={m.id}
-            className={`rounded-lg border p-3 text-sm ${
-              m.author === "admin" ? "border-indigo-100 bg-indigo-50" : "border-neutral-200 bg-white"
+            className={`rounded-md border p-3 text-sm ${
+              m.author === "admin" ? "border-teal-200 bg-teal-050" : "border-line bg-surface"
             }`}
           >
-            <p className="text-xs font-medium text-neutral-500">
+            <p className="text-xs font-medium text-ink-400">
               {m.author === "admin" ? `${m.authorName ?? "KITS support"}` : "You"} ·{" "}
               {new Date(m.createdAt).toLocaleString()}
             </p>
-            <p className="mt-1 whitespace-pre-wrap text-neutral-800">{m.body}</p>
+            <p className="mt-1 whitespace-pre-wrap text-ink-900">{m.body}</p>
           </div>
         ))}
       </div>

@@ -3,7 +3,6 @@
 import { useActionState, useMemo, useState } from "react";
 import { createGeneralOrderAction, type CheckoutState } from "@/lib/actions/orders";
 import { LABELING_FEE, DELIVERY_FEE } from "@/lib/pricing";
-import { categoryIcon } from "@/lib/category-icon";
 import SiteHeader from "@/components/site/header";
 import SiteFooter from "@/components/site/footer";
 
@@ -85,13 +84,13 @@ export default function StoreCart({ items, account }: { items: Sku[]; account: A
     const itemsJson = JSON.stringify(cartLines.map((l) => ({ skuId: l.sku.id, qty: l.qty })));
 
     return (
-      <div className="min-h-screen bg-neutral-50">
+      <div className="min-h-screen bg-canvas">
         <SiteHeader customerName={account?.name} />
         <div className="mx-auto max-w-xl px-6 py-16">
-          <button onClick={() => setStep("browse")} className="text-xs text-neutral-400 hover:text-neutral-700">
+          <button onClick={() => setStep("browse")} className="text-xs text-ink-400 hover:text-ink-600">
             ← Back to store
           </button>
-          <h1 className="mt-1 text-2xl font-semibold text-neutral-900">Checkout</h1>
+          <h1 className="mt-1 font-display text-2xl font-semibold text-ink-900">Checkout</h1>
 
           <form action={formAction} className="mt-6 space-y-6">
             <input type="hidden" name="items_json" value={itemsJson} />
@@ -99,41 +98,40 @@ export default function StoreCart({ items, account }: { items: Sku[]; account: A
             <input type="hidden" name="child_name" value={childName} />
             <input type="hidden" name="child_class" value={childClass} />
 
-            <div className="rounded-xl border border-neutral-200 bg-white p-5 shadow-sm">
-              <p className="text-sm font-medium text-neutral-900">Order summary</p>
-              <ul className="mt-3 divide-y divide-neutral-100 text-sm">
+            <div className="rounded-md border border-line bg-surface p-5">
+              <p className="text-sm font-medium text-ink-900">Order summary</p>
+              <ul className="mt-3 divide-y divide-line-2 text-sm">
                 {cartLines.map((l) => (
                   <li key={l.sku.id} className="flex items-center justify-between py-1.5">
-                    <span className="flex items-center gap-2 text-neutral-600">
-                      <span>{categoryIcon(l.sku.category)}</span>
-                      {l.sku.name} × {l.qty}
+                    <span className="text-ink-600">
+                      {l.sku.name} <span className="font-mono">×{l.qty}</span>
                     </span>
-                    <span className="text-neutral-900">{(l.qty * l.sku.unitPrice).toFixed(2)} EGP</span>
+                    <span className="font-mono text-ink-900">{(l.qty * l.sku.unitPrice).toFixed(2)} EGP</span>
                   </li>
                 ))}
               </ul>
-              <div className="mt-3 space-y-1 border-t border-neutral-200 pt-3 text-sm">
-                <div className="flex justify-between text-neutral-500">
+              <div className="mt-3 space-y-1 border-t border-line pt-3 text-sm">
+                <div className="flex justify-between text-ink-600">
                   <span>Items</span>
-                  <span>{itemsTotal.toFixed(2)} EGP</span>
+                  <span className="font-mono">{itemsTotal.toFixed(2)} EGP</span>
                 </div>
-                <div className="flex justify-between text-neutral-500">
+                <div className="flex justify-between text-ink-600">
                   <span>Labeling</span>
-                  <span>{labelingCost.toFixed(2)} EGP</span>
+                  <span className="font-mono">{labelingCost.toFixed(2)} EGP</span>
                 </div>
-                <div className="flex justify-between text-neutral-500">
+                <div className="flex justify-between text-ink-600">
                   <span>Delivery (home)</span>
-                  <span>{deliveryCost.toFixed(2)} EGP</span>
+                  <span className="font-mono">{deliveryCost.toFixed(2)} EGP</span>
                 </div>
-                <div className="flex justify-between border-t border-neutral-200 pt-2 text-base font-semibold text-neutral-900">
+                <div className="flex justify-between border-t border-line pt-2 text-base font-semibold text-ink-900">
                   <span>Total</span>
-                  <span className="text-indigo-600">{total.toFixed(2)} EGP</span>
+                  <span className="font-mono text-teal-700">{total.toFixed(2)} EGP</span>
                 </div>
               </div>
             </div>
 
-            <div className="rounded-xl border border-neutral-200 bg-white p-5 shadow-sm">
-              <p className="text-sm font-medium text-neutral-900">Your details</p>
+            <div className="rounded-md border border-line bg-surface p-5">
+              <p className="text-sm font-medium text-ink-900">Your details</p>
               <div className="mt-3 space-y-3">
                 <input
                   name="parent_name"
@@ -141,7 +139,7 @@ export default function StoreCart({ items, account }: { items: Sku[]; account: A
                   onChange={(e) => setParentName(e.target.value)}
                   required
                   placeholder="Your full name"
-                  className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+                  className="w-full rounded-sm border border-line px-3 py-2 text-sm focus:outline-2 focus:outline-offset-1 focus:outline-teal-500"
                 />
                 <input
                   name="parent_phone"
@@ -150,7 +148,7 @@ export default function StoreCart({ items, account }: { items: Sku[]; account: A
                   required
                   type="tel"
                   placeholder="Phone number"
-                  className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+                  className="w-full rounded-sm border border-line px-3 py-2 text-sm focus:outline-2 focus:outline-offset-1 focus:outline-teal-500"
                 />
                 <input
                   name="parent_email"
@@ -158,13 +156,13 @@ export default function StoreCart({ items, account }: { items: Sku[]; account: A
                   onChange={(e) => setParentEmail(e.target.value)}
                   type="email"
                   placeholder="Email (optional)"
-                  className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+                  className="w-full rounded-sm border border-line px-3 py-2 text-sm focus:outline-2 focus:outline-offset-1 focus:outline-teal-500"
                 />
                 {account && account.addresses.length > 0 && (
                   <select
                     value={savedAddressId}
                     onChange={(e) => selectSavedAddress(e.target.value)}
-                    className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+                    className="w-full rounded-sm border border-line px-3 py-2 text-sm focus:outline-2 focus:outline-offset-1 focus:outline-teal-500"
                   >
                     <option value="">Enter new address...</option>
                     {account.addresses.map((a) => (
@@ -182,43 +180,47 @@ export default function StoreCart({ items, account }: { items: Sku[]; account: A
                   required
                   placeholder="Delivery address"
                   rows={2}
-                  className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+                  className="w-full rounded-sm border border-line px-3 py-2 text-sm focus:outline-2 focus:outline-offset-1 focus:outline-teal-500"
                 />
               </div>
             </div>
 
-            <div className="rounded-xl border border-neutral-200 bg-white p-5 shadow-sm">
-              <p className="text-sm font-medium text-neutral-900">Payment</p>
+            <div className="rounded-md border border-line bg-surface p-5">
+              <p className="text-sm font-medium text-ink-900">Payment</p>
               <div className="mt-3 space-y-2">
-                <label className="flex items-center gap-2 rounded-md border border-neutral-200 px-3 py-2 text-sm has-[:checked]:border-indigo-500 has-[:checked]:bg-indigo-50">
+                <label className="flex items-center gap-2 rounded-sm border border-line px-3 py-2 text-sm has-[:checked]:border-teal-500 has-[:checked]:bg-teal-050">
                   <input
                     type="radio"
                     name="payment_method"
                     value="COD"
                     checked={paymentMethod === "COD"}
                     onChange={() => setPaymentMethod("COD")}
+                    className="accent-teal-600"
                   />
                   Cash on delivery
                 </label>
-                <label className="flex items-center gap-2 rounded-md border border-neutral-200 px-3 py-2 text-sm has-[:checked]:border-indigo-500 has-[:checked]:bg-indigo-50">
+                <label className="flex items-center gap-2 rounded-sm border border-line px-3 py-2 text-sm has-[:checked]:border-teal-500 has-[:checked]:bg-teal-050">
                   <input
                     type="radio"
                     name="payment_method"
                     value="CARD"
                     checked={paymentMethod === "CARD"}
                     onChange={() => setPaymentMethod("CARD")}
+                    className="accent-teal-600"
                   />
                   Card (test mode — no real charge)
                 </label>
               </div>
             </div>
 
-            {state?.error && <p className="text-sm text-red-600">{state.error}</p>}
+            {state?.error && (
+              <p className="rounded-sm border border-error bg-error-bg px-3 py-2 text-sm text-error">{state.error}</p>
+            )}
 
             <button
               type="submit"
               disabled={pending}
-              className="w-full rounded-full bg-indigo-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 disabled:opacity-50"
+              className="cut-tr w-full rounded-md bg-teal-600 px-4 py-3 text-sm font-medium text-white hover:bg-teal-700 disabled:opacity-50"
             >
               {pending ? "Placing order..." : "Place order"}
             </button>
@@ -230,46 +232,44 @@ export default function StoreCart({ items, account }: { items: Sku[]; account: A
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50">
-      <SiteHeader />
+    <div className="min-h-screen bg-canvas">
+      <SiteHeader customerName={account?.name} />
       <div className="mx-auto max-w-4xl px-6 py-12 lg:flex lg:gap-10">
         <div className="lg:flex-1">
-          <p className="text-sm font-medium text-indigo-600">KITS</p>
-          <h1 className="mt-1 text-2xl font-semibold text-neutral-900">General Store</h1>
-          <p className="mt-1 text-sm text-neutral-500">Browse individual items — no school kit required.</p>
+          <p className="text-sm font-medium text-teal-700">General Store</p>
+          <h1 className="mt-1 font-display text-2xl font-semibold text-ink-900">Buy items individually</h1>
+          <p className="mt-1 text-sm text-ink-600">No school kit required.</p>
 
           <div className="mt-6 space-y-6">
             {grouped.map(([category, categoryItems]) => (
               <div key={category}>
-                <div className="mb-3 flex items-center gap-2">
-                  <span className="text-xl">{categoryIcon(category)}</span>
-                  <h2 className="text-sm font-semibold uppercase tracking-wide text-neutral-500">{category}</h2>
-                </div>
+                <h2 className="mb-3 text-xs font-medium tracking-wide text-ink-400 uppercase">{category}</h2>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   {categoryItems.map((item) => (
                     <div
                       key={item.id}
-                      className="flex items-center justify-between rounded-xl border border-neutral-200 bg-white p-4 shadow-sm"
+                      className="flex items-center justify-between rounded-md border border-line bg-surface p-4"
                     >
                       <div>
-                        <p className="text-sm font-medium text-neutral-900">{item.name}</p>
-                        <p className="text-xs text-neutral-400">
-                          {item.unitPrice.toFixed(2)} EGP{item.brand ? ` · ${item.brand}` : ""}
+                        <p className="text-sm font-medium text-ink-900">{item.name}</p>
+                        <p className="text-xs text-ink-400">
+                          <span className="font-mono">{item.unitPrice.toFixed(2)} EGP</span>
+                          {item.brand ? ` · ${item.brand}` : ""}
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
                         <button
                           type="button"
                           onClick={() => setQty(item.id, (cart[item.id] ?? 0) - 1)}
-                          className="h-7 w-7 rounded-md border border-neutral-300 text-sm text-neutral-600 hover:bg-neutral-100"
+                          className="h-7 w-7 rounded-sm border border-line text-sm text-ink-600 hover:bg-canvas"
                         >
                           −
                         </button>
-                        <span className="w-6 text-center text-sm text-neutral-900">{cart[item.id] ?? 0}</span>
+                        <span className="w-6 text-center font-mono text-sm text-ink-900">{cart[item.id] ?? 0}</span>
                         <button
                           type="button"
                           onClick={() => setQty(item.id, (cart[item.id] ?? 0) + 1)}
-                          className="h-7 w-7 rounded-md border border-neutral-300 text-sm text-neutral-600 hover:bg-neutral-100"
+                          className="h-7 w-7 rounded-sm border border-line text-sm text-ink-600 hover:bg-canvas"
                         >
                           +
                         </button>
@@ -283,30 +283,32 @@ export default function StoreCart({ items, account }: { items: Sku[]; account: A
         </div>
 
         <div className="mt-8 lg:mt-0 lg:w-80 lg:shrink-0">
-          <div className="sticky top-24 space-y-5 rounded-xl border border-neutral-200 bg-white p-5 shadow-sm">
-            <p className="text-sm font-medium text-neutral-900">Cart ({cartCount})</p>
+          <div className="sticky top-24 space-y-5 rounded-md border border-line bg-surface p-5 shadow-[var(--shadow-token)]">
+            <p className="text-sm font-medium text-ink-900">
+              Cart (<span className="font-mono">{cartCount}</span>)
+            </p>
 
             <label className="flex items-center justify-between text-sm">
               <span>
-                <span className="font-medium text-neutral-900">Add labeling</span>
-                <span className="block text-xs text-neutral-400">Child&apos;s name on every item</span>
+                <span className="font-medium text-ink-900">Add name labels</span>
+                <span className="block text-xs text-ink-400">Child&apos;s name on every item</span>
               </span>
               <input
                 type="checkbox"
                 checked={labeling}
                 onChange={(e) => setLabeling(e.target.checked)}
-                className="h-4 w-4 accent-indigo-600"
+                className="h-5 w-5 rounded-sm border-line accent-teal-600"
               />
             </label>
 
             <div>
-              <p className="text-sm font-medium text-neutral-900">Child details</p>
+              <p className="text-sm font-medium text-ink-900">Child details</p>
               <div className="mt-2 space-y-2">
                 {account && account.children.length > 0 && (
                   <select
                     value={savedChildId}
                     onChange={(e) => selectSavedChild(e.target.value)}
-                    className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+                    className="w-full rounded-sm border border-line px-3 py-2 text-sm focus:outline-2 focus:outline-offset-1 focus:outline-teal-500"
                   >
                     <option value="">Enter new child...</option>
                     {account.children.map((c) => (
@@ -321,40 +323,40 @@ export default function StoreCart({ items, account }: { items: Sku[]; account: A
                   value={childName}
                   onChange={(e) => setChildName(e.target.value)}
                   placeholder="Child's full name"
-                  className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+                  className="w-full rounded-sm border border-line px-3 py-2 text-sm focus:outline-2 focus:outline-offset-1 focus:outline-teal-500"
                 />
                 <input
                   value={childClass}
                   onChange={(e) => setChildClass(e.target.value)}
                   placeholder="Class / section"
-                  className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+                  className="w-full rounded-sm border border-line px-3 py-2 text-sm focus:outline-2 focus:outline-offset-1 focus:outline-teal-500"
                 />
               </div>
             </div>
 
-            <div className="space-y-1 border-t border-neutral-200 pt-3 text-sm">
-              <div className="flex justify-between text-neutral-500">
+            <div className="space-y-1 border-t border-line pt-3 text-sm">
+              <div className="flex justify-between text-ink-600">
                 <span>Items</span>
-                <span>{itemsTotal.toFixed(2)} EGP</span>
+                <span className="font-mono">{itemsTotal.toFixed(2)} EGP</span>
               </div>
-              <div className="flex justify-between text-neutral-500">
+              <div className="flex justify-between text-ink-600">
                 <span>Labeling</span>
-                <span>{labelingCost.toFixed(2)} EGP</span>
+                <span className="font-mono">{labelingCost.toFixed(2)} EGP</span>
               </div>
-              <div className="flex justify-between text-neutral-500">
+              <div className="flex justify-between text-ink-600">
                 <span>Delivery (home)</span>
-                <span>{deliveryCost.toFixed(2)} EGP</span>
+                <span className="font-mono">{deliveryCost.toFixed(2)} EGP</span>
               </div>
-              <div className="flex justify-between border-t border-neutral-200 pt-2 text-base font-semibold text-neutral-900">
+              <div className="flex justify-between border-t border-line pt-2 text-base font-semibold text-ink-900">
                 <span>Total</span>
-                <span className="text-indigo-600">{total.toFixed(2)} EGP</span>
+                <span className="font-mono text-teal-700">{total.toFixed(2)} EGP</span>
               </div>
             </div>
 
             <button
               onClick={() => canCheckout && setStep("checkout")}
               disabled={!canCheckout}
-              className="w-full rounded-full bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 disabled:opacity-50"
+              className="cut-tr w-full rounded-md bg-teal-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-teal-700 disabled:opacity-50"
             >
               {cartLines.length === 0 ? "Add items to continue" : "Continue to checkout"}
             </button>

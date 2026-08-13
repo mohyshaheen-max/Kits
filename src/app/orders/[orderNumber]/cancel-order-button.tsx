@@ -9,14 +9,14 @@ export default function CancelOrderButton({ orderId }: { orderId: number }) {
   return (
     <form action={formAction}>
       <input type="hidden" name="order_id" value={orderId} />
-      {state?.error && <p className="mb-2 text-sm text-red-600">{state.error}</p>}
+      {state?.error && <p className="mb-2 text-sm text-error">{state.error}</p>}
       <button
         type="submit"
         disabled={pending}
         onClick={(e) => {
           if (!confirm("Cancel this order? This can't be undone.")) e.preventDefault();
         }}
-        className="rounded-full border border-red-200 bg-red-50 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-100 disabled:opacity-50"
+        className="rounded-md border border-error bg-error-bg px-4 py-2 text-sm font-medium text-error hover:opacity-80 disabled:opacity-50"
       >
         {pending ? "Cancelling..." : "Cancel order"}
       </button>

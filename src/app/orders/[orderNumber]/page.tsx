@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import { desc, eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { orders, orderItems, skus, schools, grades, returns } from "@/db/schema";
-import { categoryIcon } from "@/lib/category-icon";
 import { getCurrentCustomer } from "@/lib/customer-session";
 import SiteHeader from "@/components/site/header";
 import SiteFooter from "@/components/site/footer";
@@ -12,9 +11,9 @@ import CancelOrderButton from "./cancel-order-button";
 export const dynamic = "force-dynamic";
 
 const RETURN_STATUS_STYLE: Record<string, string> = {
-  requested: "bg-amber-100 text-amber-700",
-  approved: "bg-emerald-100 text-emerald-700",
-  declined: "bg-red-100 text-red-700",
+  requested: "bg-warn-bg text-warn",
+  approved: "bg-ok-bg text-ok",
+  declined: "bg-error-bg text-error",
 };
 
 export default async function OrderConfirmationPage({ params }: { params: Promise<{ orderNumber: string }> }) {
@@ -41,88 +40,83 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
   const canReturn = owned && order.fulfilmentStatus === "delivered" && returnRequests.length === 0;
 
   return (
-    <div className="min-h-screen bg-neutral-50">
+    <div className="min-h-screen bg-canvas">
       <SiteHeader customerName={customer?.name} />
       <div className="mx-auto max-w-xl px-6 py-16">
         {order.fulfilmentStatus === "cancelled" ? (
-          <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800 shadow-sm">
+          <div className="rounded-md border border-error bg-error-bg p-4 text-sm text-error">
             This order was cancelled.
           </div>
         ) : (
-          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800 shadow-sm">
-            ✅ Order confirmed. We&apos;ll be in touch about delivery.
+          <div className="rounded-md border border-ok bg-ok-bg p-4 text-sm text-ok">
+            Order confirmed. We&apos;ll be in touch about delivery.
           </div>
         )}
 
-        <h1 className="mt-6 text-2xl font-semibold text-neutral-900">{order.orderNumber}</h1>
-        <p className="mt-1 text-sm text-indigo-600">
-          {school ? `${school.name} — ${grade?.label}` : "General Store"}
-        </p>
+        <h1 className="mt-6 font-display text-2xl font-semibold text-ink-900">{order.orderNumber}</h1>
+        <p className="mt-1 text-sm text-teal-700">{school ? `${school.name} — ${grade?.label}` : "General Store"}</p>
 
-        <div className="mt-6 overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm">
-          <ul className="divide-y divide-neutral-100">
+        <div className="mt-6 overflow-hidden rounded-md border border-line bg-surface">
+          <ul className="divide-y divide-line-2">
             {items.map(({ item, sku }) => (
               <li key={item.id} className="flex items-center justify-between px-4 py-3 text-sm">
-                <div className="flex items-center gap-2">
-                  <span>{categoryIcon(sku.category)}</span>
-                  <div>
-                    <p className="font-medium text-neutral-900">{sku.name}</p>
-                    <p className="text-xs text-neutral-400">Qty {item.qty}</p>
-                  </div>
+                <div>
+                  <p className="font-medium text-ink-900">{sku.name}</p>
+                  <p className="font-mono text-xs text-ink-400">×{item.qty}</p>
                 </div>
-                <p className="text-neutral-600">{item.lineTotal.toFixed(2)} EGP</p>
+                <p className="font-mono text-ink-600">{item.lineTotal.toFixed(2)} EGP</p>
               </li>
             ))}
           </ul>
-          <div className="space-y-1 border-t border-neutral-200 bg-neutral-50 p-4 text-sm">
-            <div className="flex justify-between text-neutral-500">
+          <div className="space-y-1 border-t border-line bg-canvas p-4 text-sm">
+            <div className="flex justify-between text-ink-600">
               <span>Items</span>
-              <span>{order.subtotal.toFixed(2)} EGP</span>
+              <span className="font-mono">{order.subtotal.toFixed(2)} EGP</span>
             </div>
-            <div className="flex justify-between text-neutral-500">
+            <div className="flex justify-between text-ink-600">
               <span>Labeling</span>
-              <span>{order.labelingFee.toFixed(2)} EGP</span>
+              <span className="font-mono">{order.labelingFee.toFixed(2)} EGP</span>
             </div>
-            <div className="flex justify-between text-neutral-500">
+            <div className="flex justify-between text-ink-600">
               <span>Delivery ({order.deliveryMethod === "SCHOOL_BATCH" ? "school batch" : "home"})</span>
-              <span>{order.deliveryFee.toFixed(2)} EGP</span>
+              <span className="font-mono">{order.deliveryFee.toFixed(2)} EGP</span>
             </div>
-            <div className="flex justify-between border-t border-neutral-200 pt-2 text-base font-semibold text-neutral-900">
+            <div className="flex justify-between border-t border-line pt-2 text-base font-semibold text-ink-900">
               <span>Total</span>
-              <span className="text-indigo-600">{order.total.toFixed(2)} EGP</span>
+              <span className="font-mono text-teal-700">{order.total.toFixed(2)} EGP</span>
             </div>
           </div>
         </div>
 
-        <div className="mt-6 space-y-2 rounded-xl border border-neutral-200 bg-white p-4 text-sm shadow-sm">
+        <div className="mt-6 space-y-2 rounded-md border border-line bg-surface p-4 text-sm">
           <div className="flex justify-between">
-            <span className="text-neutral-500">Child</span>
-            <span className="text-neutral-900">
+            <span className="text-ink-600">Child</span>
+            <span className="text-ink-900">
               {order.childName} · {order.childClass}
             </span>
           </div>
           <div className="flex justify-between gap-4">
-            <span className="shrink-0 text-neutral-500">Payment</span>
-            <span className="text-right text-neutral-900">
+            <span className="shrink-0 text-ink-600">Payment</span>
+            <span className="text-right text-ink-900">
               {order.paymentMethod === "COD" ? "Cash on delivery" : "Card"} —{" "}
               {order.paymentStatus === "pending_reconciliation" ? "awaiting cash collection" : "paid"}
             </span>
           </div>
           {order.deliveryAddress && (
             <div className="flex justify-between">
-              <span className="text-neutral-500">Address</span>
-              <span className="text-right text-neutral-900">{order.deliveryAddress}</span>
+              <span className="text-ink-600">Address</span>
+              <span className="text-right text-ink-900">{order.deliveryAddress}</span>
             </div>
           )}
         </div>
 
         {returnRequests.length > 0 && (
-          <div className="mt-6 space-y-2 rounded-xl border border-neutral-200 bg-white p-4 text-sm shadow-sm">
-            <p className="font-medium text-neutral-900">Return requests</p>
+          <div className="mt-6 space-y-2 rounded-md border border-line bg-surface p-4 text-sm">
+            <p className="font-medium text-ink-900">Return requests</p>
             {returnRequests.map((r) => (
               <div key={r.id} className="flex items-center justify-between">
-                <span className="text-neutral-600">{r.reason}</span>
-                <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${RETURN_STATUS_STYLE[r.status]}`}>
+                <span className="text-ink-600">{r.reason}</span>
+                <span className={`rounded-sm px-2 py-0.5 text-xs font-medium ${RETURN_STATUS_STYLE[r.status]}`}>
                   {r.status}
                 </span>
               </div>
@@ -135,14 +129,14 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
           {canReturn && (
             <Link
               href={`/orders/${order.orderNumber}/return`}
-              className="inline-block rounded-full border border-neutral-300 bg-white px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50"
+              className="inline-block rounded-md border border-teal-700 px-4 py-2 text-sm font-medium text-teal-700 hover:bg-teal-050"
             >
               Request a return
             </Link>
           )}
           <Link
             href={`/support?order=${order.orderNumber}`}
-            className="inline-block rounded-full border border-neutral-300 bg-white px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50"
+            className="inline-block rounded-md border border-line px-4 py-2 text-sm font-medium text-ink-600 hover:bg-canvas"
           >
             Need help with this order?
           </Link>

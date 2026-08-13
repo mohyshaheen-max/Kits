@@ -11,9 +11,9 @@ import SiteFooter from "@/components/site/footer";
 export const dynamic = "force-dynamic";
 
 const TIER_STYLE: Record<string, string> = {
-  A: "bg-indigo-100 text-indigo-700",
-  B: "bg-sky-100 text-sky-700",
-  C: "bg-neutral-100 text-neutral-600",
+  A: "bg-teal-100 text-teal-800",
+  B: "bg-canvas text-ink-600",
+  C: "bg-canvas text-ink-600",
 };
 
 export default async function Home() {
@@ -30,28 +30,28 @@ export default async function Home() {
   const kitCountBySchool = Object.fromEntries(kitCounts.map((k) => [k.schoolId, k.n]));
 
   return (
-    <div className="min-h-screen bg-neutral-50">
+    <div className="min-h-screen bg-canvas">
       <SiteHeader customerName={customer?.name} />
 
-      <section className="bg-gradient-to-b from-indigo-50 to-neutral-50 px-6 py-20">
+      <section className="bg-surface px-6 py-20">
         <div className="mx-auto max-w-3xl text-center">
-          <h1 className="text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl">
+          <h1 className="font-display text-4xl font-bold tracking-tight text-ink-900 sm:text-5xl">
             School supplies, sorted.
           </h1>
-          <p className="mx-auto mt-4 max-w-xl text-base text-neutral-600">
+          <p className="mx-auto mt-4 max-w-xl text-base text-ink-600">
             Pick your child&apos;s school and grade to get this year&apos;s exact supply kit — priced, itemised, and
             delivered to your door or straight to school.
           </p>
           <div className="mt-8 flex items-center justify-center gap-3">
             <a
               href="#schools"
-              className="rounded-full bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700"
+              className="cut-tr rounded-md bg-teal-600 px-6 py-3 text-sm font-medium text-white hover:bg-teal-700"
             >
               Find your school
             </a>
             <Link
               href="/store"
-              className="rounded-full border border-neutral-300 bg-white px-6 py-3 text-sm font-semibold text-neutral-700 hover:bg-neutral-50"
+              className="rounded-md border border-teal-700 px-6 py-3 text-sm font-medium text-teal-700 hover:bg-teal-050"
             >
               Browse the store
             </Link>
@@ -60,38 +60,33 @@ export default async function Home() {
       </section>
 
       <section id="schools" className="mx-auto max-w-5xl px-6 py-16">
-        <h2 className="text-xl font-semibold text-neutral-900">Find your school</h2>
-        <p className="mt-1 text-sm text-neutral-500">Every kit is priced from the school&apos;s actual supply list.</p>
+        <h2 className="font-display text-xl font-semibold text-ink-900">Find your school</h2>
+        <p className="mt-1 text-sm text-ink-400">Every kit is priced from the school&apos;s actual supply list.</p>
 
         <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
           {activeSchools.map((s) => (
             <Link
               key={s.id}
               href={`/s/${s.referralSlug}`}
-              className="group overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+              className="group flex items-center justify-between rounded-md border border-line bg-surface p-5 transition hover:border-teal-400"
             >
-              <div className="h-1.5 bg-indigo-600" />
-              <div className="flex items-center justify-between p-5">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <p className="font-semibold text-neutral-900">{s.name}</p>
-                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${TIER_STYLE[s.tier]}`}>
-                      Tier {s.tier}
-                    </span>
-                  </div>
-                  {s.district && <p className="mt-0.5 text-sm text-neutral-500">{s.district}</p>}
-                  <p className="mt-2 text-xs text-neutral-400">
-                    {kitCountBySchool[s.id] ?? 0} kit{(kitCountBySchool[s.id] ?? 0) === 1 ? "" : "s"} available
-                  </p>
+              <div>
+                <div className="flex items-center gap-2">
+                  <p className="font-medium text-ink-900">{s.name}</p>
+                  <span className={`rounded-sm px-2 py-0.5 text-xs font-medium ${TIER_STYLE[s.tier]}`}>
+                    Tier {s.tier}
+                  </span>
                 </div>
-                <span className="text-neutral-300 transition group-hover:translate-x-0.5 group-hover:text-indigo-600">
-                  →
-                </span>
+                {s.district && <p className="mt-0.5 text-sm text-ink-600">{s.district}</p>}
+                <p className="mt-2 text-xs text-ink-400">
+                  {kitCountBySchool[s.id] ?? 0} kit{(kitCountBySchool[s.id] ?? 0) === 1 ? "" : "s"} available
+                </p>
               </div>
+              <span className="text-ink-400 transition group-hover:translate-x-0.5 group-hover:text-teal-700">→</span>
             </Link>
           ))}
           {activeSchools.length === 0 && (
-            <p className="col-span-full rounded-xl border border-dashed border-neutral-300 bg-white p-8 text-center text-sm text-neutral-400">
+            <p className="col-span-full rounded-md border border-dashed border-line bg-surface p-8 text-center text-sm text-ink-400">
               No schools published yet.
             </p>
           )}
@@ -99,13 +94,13 @@ export default async function Home() {
 
         <Link
           href="/store"
-          className="group mt-4 flex items-center justify-between overflow-hidden rounded-xl border border-dashed border-neutral-300 bg-white p-5 transition hover:-translate-y-0.5 hover:border-indigo-300 hover:shadow-md"
+          className="group mt-4 flex items-center justify-between rounded-md border border-dashed border-line bg-surface p-5 transition hover:border-teal-400"
         >
           <div>
-            <p className="font-semibold text-neutral-900">General Store</p>
-            <p className="mt-0.5 text-sm text-neutral-500">Buy individual items — no school kit required</p>
+            <p className="font-medium text-ink-900">General Store</p>
+            <p className="mt-0.5 text-sm text-ink-600">Buy individual items — no school kit required</p>
           </div>
-          <span className="text-neutral-300 transition group-hover:translate-x-0.5 group-hover:text-indigo-600">→</span>
+          <span className="text-ink-400 transition group-hover:translate-x-0.5 group-hover:text-teal-700">→</span>
         </Link>
       </section>
 

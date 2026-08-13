@@ -1,26 +1,120 @@
 @import "tailwindcss";
 
+/* ---------------------------------------------------------------------
+ * KITS design tokens — see DESIGN.md. Brand teal is #008080 exactly;
+ * --teal-600 is the logo colour and must not be altered. Status colours
+ * (ok/warn/error) are semantic only — never decorative.
+ * ------------------------------------------------------------------- */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Brand */
+  --teal-900: #003d3d;
+  --teal-800: #005252;
+  --teal-700: #006b6b;
+  --teal-600: #008080; /* logo colour */
+  --teal-500: #0d9494;
+  --teal-400: #35aaaa;
+  --teal-300: #7cc9c9;
+  --teal-200: #b3e0e0;
+  --teal-100: #d9efef;
+  --teal-050: #f0f8f8;
+
+  /* Ink — near-black carrying the brand hue */
+  --ink-900: #0a1c1c;
+  --ink-600: #475757;
+  --ink-400: #647474;
+
+  /* Neutral — faint teal cast, never pure grey */
+  --line: #dce3e3;
+  --line-2: #edf1f1;
+  --surface: #ffffff;
+  --canvas: #f6f9f9;
+
+  /* Status — semantic only */
+  --ok: #1b7f4b;
+  --warn: #b5761a;
+  --error: #b0342c;
+  --ok-bg: #e8f4ee;
+  --warn-bg: #fbf2e3;
+  --error-bg: #f9eae9;
+
+  /* Subject colours — recessive, bars/dots only, never fills */
+  --subj-english: #2563a8;
+  --subj-maths: #c79a16;
+  --subj-science: #2e7d4f;
+  --subj-humanities: #b0342c;
+  --subj-language: #6b4e9e;
+  --subj-religion: #c2621c;
+  --subj-arts: #b0457e;
+  --subj-ict: #5a6b78;
+
+  --shadow-token: 0 1px 3px rgba(12, 27, 26, 0.08), 0 4px 16px rgba(12, 27, 26, 0.06);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-teal-900: var(--teal-900);
+  --color-teal-800: var(--teal-800);
+  --color-teal-700: var(--teal-700);
+  --color-teal-600: var(--teal-600);
+  --color-teal-500: var(--teal-500);
+  --color-teal-400: var(--teal-400);
+  --color-teal-300: var(--teal-300);
+  --color-teal-200: var(--teal-200);
+  --color-teal-100: var(--teal-100);
+  --color-teal-050: var(--teal-050);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-ink-900: var(--ink-900);
+  --color-ink-600: var(--ink-600);
+  --color-ink-400: var(--ink-400);
+
+  --color-line: var(--line);
+  --color-line-2: var(--line-2);
+  --color-surface: var(--surface);
+  --color-canvas: var(--canvas);
+
+  --color-ok: var(--ok);
+  --color-warn: var(--warn);
+  --color-error: var(--error);
+  --color-ok-bg: var(--ok-bg);
+  --color-warn-bg: var(--warn-bg);
+  --color-error-bg: var(--error-bg);
+
+  --color-subj-english: var(--subj-english);
+  --color-subj-maths: var(--subj-maths);
+  --color-subj-science: var(--subj-science);
+  --color-subj-humanities: var(--subj-humanities);
+  --color-subj-language: var(--subj-language);
+  --color-subj-religion: var(--subj-religion);
+  --color-subj-arts: var(--subj-arts);
+  --color-subj-ict: var(--subj-ict);
+
+  /* r-sm/md/lg from DESIGN.md, mapped onto Tailwind's own scale so
+     existing rounded-sm/md/lg classes pick these up directly. */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  --shadow-elevated: var(--shadow-token);
+
+  --font-display: var(--font-plex-condensed), var(--font-plex-arabic), sans-serif;
+  --font-sans: var(--font-plex-arabic), var(--font-plex-sans), sans-serif;
+  --font-mono: var(--font-plex-mono), monospace;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--canvas);
+  color: var(--ink-900);
+  font-family: var(--font-sans);
+}
+
+/* The one signature mark — apply to a single element per screen. */
+.cut-tr {
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
 }

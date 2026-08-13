@@ -7,11 +7,11 @@ import { requireCustomer } from "@/lib/customer-session";
 export const dynamic = "force-dynamic";
 
 const FULFILMENT_STYLE: Record<string, string> = {
-  pending: "bg-neutral-100 text-neutral-600",
-  picking: "bg-blue-100 text-blue-700",
-  packed: "bg-blue-100 text-blue-700",
-  delivered: "bg-emerald-100 text-emerald-700",
-  cancelled: "bg-red-100 text-red-700",
+  pending: "bg-canvas text-ink-600",
+  picking: "bg-teal-100 text-teal-800",
+  packed: "bg-teal-100 text-teal-800",
+  delivered: "bg-ok-bg text-ok",
+  cancelled: "bg-error-bg text-error",
 };
 
 export default async function AccountOrdersPage() {
@@ -37,13 +37,13 @@ export default async function AccountOrdersPage() {
 
   return (
     <div>
-      <p className="text-sm text-neutral-500">
+      <p className="text-sm text-ink-600">
         {rows.length} order{rows.length === 1 ? "" : "s"}
       </p>
 
-      <div className="mt-4 overflow-hidden rounded-lg border border-neutral-200 bg-white">
+      <div className="mt-4 overflow-hidden rounded-md border border-line bg-surface">
         <table className="w-full text-left text-sm">
-          <thead className="bg-neutral-50 text-xs uppercase tracking-wide text-neutral-500">
+          <thead className="bg-canvas text-xs font-medium tracking-wide text-ink-400 uppercase">
             <tr>
               <th className="px-4 py-2 font-medium">Order</th>
               <th className="px-4 py-2 font-medium">School / Grade</th>
@@ -52,23 +52,23 @@ export default async function AccountOrdersPage() {
               <th className="px-4 py-2 font-medium">Status</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-neutral-100">
+          <tbody className="divide-y divide-line-2">
             {rows.map((o) => (
-              <tr key={o.id} className="hover:bg-neutral-50">
+              <tr key={o.id} className="hover:bg-teal-050">
                 <td className="px-4 py-3">
-                  <Link href={`/orders/${o.orderNumber}`} className="font-medium text-indigo-600 hover:underline">
+                  <Link href={`/orders/${o.orderNumber}`} className="font-medium text-teal-700 hover:underline">
                     {o.orderNumber}
                   </Link>
-                  <p className="text-xs text-neutral-400">{new Date(o.createdAt).toLocaleString()}</p>
+                  <p className="text-xs text-ink-400">{new Date(o.createdAt).toLocaleString()}</p>
                 </td>
-                <td className="px-4 py-3 text-neutral-600">
+                <td className="px-4 py-3 text-ink-600">
                   {o.schoolName ? `${o.schoolName} · ${o.gradeLabel}` : "General Store"}
                 </td>
-                <td className="px-4 py-3 text-neutral-600">{o.childName}</td>
-                <td className="px-4 py-3 text-neutral-900">{o.total.toFixed(2)} EGP</td>
+                <td className="px-4 py-3 text-ink-600">{o.childName}</td>
+                <td className="px-4 py-3 font-mono text-ink-900">{o.total.toFixed(2)} EGP</td>
                 <td className="px-4 py-3">
                   <span
-                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${FULFILMENT_STYLE[o.fulfilmentStatus]}`}
+                    className={`rounded-sm px-2 py-0.5 text-xs font-medium ${FULFILMENT_STYLE[o.fulfilmentStatus]}`}
                   >
                     {o.fulfilmentStatus}
                   </span>
@@ -77,7 +77,7 @@ export default async function AccountOrdersPage() {
             ))}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-6 text-center text-sm text-neutral-400">
+                <td colSpan={5} className="px-4 py-6 text-center text-sm text-ink-400">
                   No orders yet.
                 </td>
               </tr>

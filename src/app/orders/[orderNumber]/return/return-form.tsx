@@ -2,7 +2,6 @@
 
 import { useActionState, useState } from "react";
 import { requestReturnAction } from "@/lib/actions/returns";
-import { categoryIcon } from "@/lib/category-icon";
 
 type Item = { id: number; name: string; category: string; qty: number };
 
@@ -14,7 +13,7 @@ export default function ReturnForm({ orderId, items }: { orderId: number; items:
 
   if (state?.ok) {
     return (
-      <div className="mt-6 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800 shadow-sm">
+      <div className="mt-6 rounded-md border border-ok bg-ok-bg p-4 text-sm text-ok">
         Return requested — we&apos;ll review it and follow up.
       </div>
     );
@@ -24,20 +23,21 @@ export default function ReturnForm({ orderId, items }: { orderId: number; items:
     <form action={formAction} className="mt-6 space-y-6">
       <input type="hidden" name="order_id" value={orderId} />
 
-      <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm">
-        <ul className="divide-y divide-neutral-100">
+      <div className="overflow-hidden rounded-md border border-line bg-surface">
+        <ul className="divide-y divide-line-2">
           {items.map((item) => (
             <li key={item.id} className="flex items-center gap-3 px-4 py-3">
               <input
                 type="checkbox"
                 checked={(qtys[item.id] ?? 0) > 0}
                 onChange={(e) => setQtys((prev) => ({ ...prev, [item.id]: e.target.checked ? item.qty : 0 }))}
-                className="h-4 w-4 accent-indigo-600"
+                className="h-5 w-5 rounded-sm border-line accent-teal-600"
               />
-              <span className="text-lg leading-none">{categoryIcon(item.category)}</span>
               <div className="flex-1">
-                <p className="text-sm font-medium text-neutral-900">{item.name}</p>
-                <p className="text-xs text-neutral-400">Ordered qty {item.qty}</p>
+                <p className="text-sm font-medium text-ink-900">{item.name}</p>
+                <p className="text-xs text-ink-400">
+                  Ordered qty <span className="font-mono">{item.qty}</span>
+                </p>
               </div>
               <input
                 type="number"
@@ -49,22 +49,22 @@ export default function ReturnForm({ orderId, items }: { orderId: number; items:
                   setQtys((prev) => ({ ...prev, [item.id]: Math.max(0, Math.min(item.qty, Number(e.target.value))) }))
                 }
                 disabled={(qtys[item.id] ?? 0) === 0}
-                className="w-16 rounded-md border border-neutral-300 px-2 py-1 text-sm disabled:bg-neutral-100"
+                className="w-16 rounded-sm border border-line px-2 py-1 font-mono text-sm disabled:bg-canvas"
               />
             </li>
           ))}
         </ul>
       </div>
 
-      <div className="rounded-xl border border-neutral-200 bg-white p-5 shadow-sm">
-        <label htmlFor="reason" className="block text-sm font-medium text-neutral-900">
+      <div className="rounded-md border border-line bg-surface p-5">
+        <label htmlFor="reason" className="block text-sm font-medium text-ink-900">
           Reason
         </label>
         <select
           id="reason"
           name="reason"
           required
-          className="mt-2 w-full rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+          className="mt-2 w-full rounded-sm border border-line px-3 py-2 text-sm focus:outline-2 focus:outline-offset-1 focus:outline-teal-500"
         >
           <option value="">Choose a reason...</option>
           {REASONS.map((r) => (
@@ -74,23 +74,25 @@ export default function ReturnForm({ orderId, items }: { orderId: number; items:
           ))}
         </select>
 
-        <label htmlFor="message" className="mt-4 block text-sm font-medium text-neutral-900">
+        <label htmlFor="message" className="mt-4 block text-sm font-medium text-ink-900">
           Message (optional)
         </label>
         <textarea
           id="message"
           name="message"
           rows={3}
-          className="mt-2 w-full rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+          className="mt-2 w-full rounded-sm border border-line px-3 py-2 text-sm focus:outline-2 focus:outline-offset-1 focus:outline-teal-500"
         />
       </div>
 
-      {state?.error && <p className="text-sm text-red-600">{state.error}</p>}
+      {state?.error && (
+        <p className="rounded-sm border border-error bg-error-bg px-3 py-2 text-sm text-error">{state.error}</p>
+      )}
 
       <button
         type="submit"
         disabled={pending}
-        className="w-full rounded-full bg-indigo-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 disabled:opacity-50"
+        className="cut-tr w-full rounded-md bg-teal-600 px-4 py-3 text-sm font-medium text-white hover:bg-teal-700 disabled:opacity-50"
       >
         {pending ? "Submitting..." : "Submit return request"}
       </button>

@@ -3,7 +3,7 @@
 import { useActionState, useMemo, useState } from "react";
 import { createOrderAction, type CheckoutState } from "@/lib/actions/orders";
 import { LABELING_FEE, DELIVERY_FEE, type DeliveryMethod } from "@/lib/pricing";
-import { categoryIcon } from "@/lib/category-icon";
+import { subjectColor } from "@/lib/subject-color";
 import SiteHeader from "@/components/site/header";
 import SiteFooter from "@/components/site/footer";
 
@@ -105,14 +105,14 @@ export default function Configurator({
 
   if (step === "review") {
     return (
-      <div className="min-h-screen bg-neutral-50">
+      <div className="min-h-screen bg-canvas">
         <SiteHeader customerName={account?.name} />
         <div className="mx-auto max-w-xl px-6 py-16">
-          <button onClick={() => setStep("configure")} className="text-xs text-neutral-400 hover:text-neutral-700">
+          <button onClick={() => setStep("configure")} className="text-xs text-ink-400 hover:text-ink-600">
             ← Back to kit
           </button>
-          <h1 className="mt-1 text-2xl font-semibold text-neutral-900">Checkout</h1>
-          <p className="mt-1 text-sm text-neutral-500">
+          <h1 className="mt-1 font-display text-2xl font-semibold text-ink-900">Checkout</h1>
+          <p className="mt-1 text-sm text-ink-600">
             {schoolName} — {gradeLabel}
           </p>
 
@@ -124,40 +124,40 @@ export default function Configurator({
             <input type="hidden" name="child_name" value={childName} />
             <input type="hidden" name="child_class" value={childClass} />
 
-            <div className="rounded-xl border border-neutral-200 bg-white p-5 shadow-sm">
-              <p className="text-sm font-medium text-neutral-900">Order summary</p>
+            <div className="rounded-md border border-line bg-surface p-5">
+              <p className="text-sm font-medium text-ink-900">Order summary</p>
               <div className="mt-3 space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-neutral-500">Child</span>
-                  <span className="font-medium text-neutral-900">
+                  <span className="text-ink-600">Child</span>
+                  <span className="font-medium text-ink-900">
                     {childName} · {childClass}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-neutral-500">Items</span>
-                  <span className="font-medium text-neutral-900">{itemsTotal.toFixed(2)} EGP</span>
+                  <span className="text-ink-600">Items</span>
+                  <span className="font-mono font-medium text-ink-900">{itemsTotal.toFixed(2)} EGP</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-neutral-500">Labeling</span>
-                  <span className="font-medium text-neutral-900">
+                  <span className="text-ink-600">Labeling</span>
+                  <span className="font-mono font-medium text-ink-900">
                     {labeling ? `${LABELING_FEE.toFixed(2)} EGP` : "Not added"}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-neutral-500">
+                  <span className="text-ink-600">
                     Delivery ({delivery === "SCHOOL_BATCH" ? "school batch" : "home"})
                   </span>
-                  <span className="font-medium text-neutral-900">{deliveryCost.toFixed(2)} EGP</span>
+                  <span className="font-mono font-medium text-ink-900">{deliveryCost.toFixed(2)} EGP</span>
                 </div>
-                <div className="flex justify-between border-t border-neutral-200 pt-2 text-base">
-                  <span className="font-semibold text-neutral-900">Total</span>
-                  <span className="font-semibold text-indigo-600">{total.toFixed(2)} EGP</span>
+                <div className="flex justify-between border-t border-line pt-2 text-base">
+                  <span className="font-semibold text-ink-900">Total</span>
+                  <span className="font-mono font-semibold text-teal-700">{total.toFixed(2)} EGP</span>
                 </div>
               </div>
             </div>
 
-            <div className="rounded-xl border border-neutral-200 bg-white p-5 shadow-sm">
-              <p className="text-sm font-medium text-neutral-900">Your details</p>
+            <div className="rounded-md border border-line bg-surface p-5">
+              <p className="text-sm font-medium text-ink-900">Your details</p>
               <div className="mt-3 space-y-3">
                 <input
                   name="parent_name"
@@ -165,7 +165,7 @@ export default function Configurator({
                   onChange={(e) => setParentName(e.target.value)}
                   required
                   placeholder="Your full name"
-                  className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+                  className="w-full rounded-sm border border-line px-3 py-2 text-sm focus:outline-2 focus:outline-offset-1 focus:outline-teal-500"
                 />
                 <input
                   name="parent_phone"
@@ -174,7 +174,7 @@ export default function Configurator({
                   required
                   type="tel"
                   placeholder="Phone number"
-                  className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+                  className="w-full rounded-sm border border-line px-3 py-2 text-sm focus:outline-2 focus:outline-offset-1 focus:outline-teal-500"
                 />
                 <input
                   name="parent_email"
@@ -182,7 +182,7 @@ export default function Configurator({
                   onChange={(e) => setParentEmail(e.target.value)}
                   type="email"
                   placeholder="Email (optional)"
-                  className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+                  className="w-full rounded-sm border border-line px-3 py-2 text-sm focus:outline-2 focus:outline-offset-1 focus:outline-teal-500"
                 />
                 {delivery === "HOME" && (
                   <>
@@ -190,7 +190,7 @@ export default function Configurator({
                       <select
                         value={savedAddressId}
                         onChange={(e) => selectSavedAddress(e.target.value)}
-                        className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+                        className="w-full rounded-sm border border-line px-3 py-2 text-sm focus:outline-2 focus:outline-offset-1 focus:outline-teal-500"
                       >
                         <option value="">Enter new address...</option>
                         {account.addresses.map((a) => (
@@ -208,45 +208,49 @@ export default function Configurator({
                       required
                       placeholder="Delivery address"
                       rows={2}
-                      className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+                      className="w-full rounded-sm border border-line px-3 py-2 text-sm focus:outline-2 focus:outline-offset-1 focus:outline-teal-500"
                     />
                   </>
                 )}
               </div>
             </div>
 
-            <div className="rounded-xl border border-neutral-200 bg-white p-5 shadow-sm">
-              <p className="text-sm font-medium text-neutral-900">Payment</p>
+            <div className="rounded-md border border-line bg-surface p-5">
+              <p className="text-sm font-medium text-ink-900">Payment</p>
               <div className="mt-3 space-y-2">
-                <label className="flex items-center gap-2 rounded-md border border-neutral-200 px-3 py-2 text-sm has-[:checked]:border-indigo-500 has-[:checked]:bg-indigo-50">
+                <label className="flex items-center gap-2 rounded-sm border border-line px-3 py-2 text-sm has-[:checked]:border-teal-500 has-[:checked]:bg-teal-050">
                   <input
                     type="radio"
                     name="payment_method"
                     value="COD"
                     checked={paymentMethod === "COD"}
                     onChange={() => setPaymentMethod("COD")}
+                    className="accent-teal-600"
                   />
                   Cash on delivery
                 </label>
-                <label className="flex items-center gap-2 rounded-md border border-neutral-200 px-3 py-2 text-sm has-[:checked]:border-indigo-500 has-[:checked]:bg-indigo-50">
+                <label className="flex items-center gap-2 rounded-sm border border-line px-3 py-2 text-sm has-[:checked]:border-teal-500 has-[:checked]:bg-teal-050">
                   <input
                     type="radio"
                     name="payment_method"
                     value="CARD"
                     checked={paymentMethod === "CARD"}
                     onChange={() => setPaymentMethod("CARD")}
+                    className="accent-teal-600"
                   />
                   Card (test mode — no real charge)
                 </label>
               </div>
             </div>
 
-            {state?.error && <p className="text-sm text-red-600">{state.error}</p>}
+            {state?.error && (
+              <p className="rounded-sm border border-error bg-error-bg px-3 py-2 text-sm text-error">{state.error}</p>
+            )}
 
             <button
               type="submit"
               disabled={pending}
-              className="w-full rounded-full bg-indigo-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 disabled:opacity-50"
+              className="cut-tr w-full rounded-md bg-teal-600 px-4 py-3 text-sm font-medium text-white hover:bg-teal-700 disabled:opacity-50"
             >
               {pending ? "Placing order..." : "Place order"}
             </button>
@@ -258,125 +262,132 @@ export default function Configurator({
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50">
-      <SiteHeader />
+    <div className="min-h-screen bg-canvas">
+      <SiteHeader customerName={account?.name} />
       <div className="mx-auto max-w-4xl px-6 py-12 lg:flex lg:gap-10">
         <div className="lg:flex-1">
-          <p className="text-sm font-medium text-indigo-600">
+          <p className="text-sm font-medium text-teal-700">
             {schoolName} — {gradeLabel}
           </p>
-          <h1 className="mt-1 text-2xl font-semibold text-neutral-900">{kitName}</h1>
+          <h1 className="mt-1 font-display text-2xl font-semibold text-ink-900">{kitName}</h1>
+          <p className="mt-1 text-xs font-medium tracking-wide text-ink-400 uppercase">{items.length} items · Standard kit</p>
 
           <div className="mt-6 space-y-6">
             {grouped.map(([subject, subjectItems]) => (
-              <div key={subject} className="overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm">
-                <div className="border-b border-neutral-200 bg-neutral-50 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">
-                  {subject}
-                </div>
-                <ul className="divide-y divide-neutral-100">
-                  {subjectItems.map((item) => (
-                    <li key={item.id} className="flex items-center justify-between px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        {item.isOptional ? (
-                          <input
-                            type="checkbox"
-                            checked={included[item.id] ?? true}
-                            onChange={() => toggleItem(item.id)}
-                            className="h-4 w-4 accent-indigo-600"
-                          />
-                        ) : (
-                          <span className="h-4 w-4 shrink-0" />
-                        )}
-                        <span className="text-lg leading-none">{categoryIcon(item.category)}</span>
-                        <div>
-                          <p className="text-sm font-medium text-neutral-900">
-                            {item.skuName}
-                            {item.isOptional && (
-                              <span className="ml-2 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
-                                optional
-                              </span>
-                            )}
-                          </p>
-                          <p className="text-xs text-neutral-400">
-                            Qty {item.qty}
-                            {item.skuBrand ? ` · ${item.skuBrand}` : ""}
-                          </p>
+              <div key={subject} className="flex overflow-hidden rounded-md border border-line bg-surface">
+                <div className="w-[3px] shrink-0" style={{ backgroundColor: subjectColor(subject) }} />
+                <div className="flex-1">
+                  <div className="border-b border-line-2 bg-canvas px-4 py-2 text-xs font-medium tracking-wide text-ink-400 uppercase">
+                    {subject}
+                  </div>
+                  <ul className="divide-y divide-line-2">
+                    {subjectItems.map((item) => (
+                      <li key={item.id} className="flex min-h-14 items-center justify-between gap-3 px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          {item.isOptional ? (
+                            <input
+                              type="checkbox"
+                              checked={included[item.id] ?? true}
+                              onChange={() => toggleItem(item.id)}
+                              className="h-5 w-5 rounded-sm border-line accent-teal-600"
+                            />
+                          ) : (
+                            <span className="h-5 w-5 shrink-0" />
+                          )}
+                          <div>
+                            <p className="text-sm font-medium text-ink-900">
+                              {item.skuName}
+                              {item.isOptional && (
+                                <span className="ml-2 rounded-sm bg-canvas px-2 py-0.5 text-xs font-medium text-ink-600">
+                                  optional
+                                </span>
+                              )}
+                            </p>
+                            <p className="text-xs text-ink-400">
+                              <span className="font-mono">×{item.qty}</span>
+                              {item.skuBrand && (
+                                <span className="ml-2 rounded-sm bg-canvas px-1.5 py-0.5 text-[11px] font-medium text-ink-600">
+                                  {item.skuBrand.toUpperCase()}
+                                </span>
+                              )}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                      <p
-                        className={`text-sm font-medium ${
-                          item.isOptional && !included[item.id] ? "text-neutral-300 line-through" : "text-neutral-900"
-                        }`}
-                      >
-                        {item.lineTotal.toFixed(2)} EGP
-                      </p>
-                    </li>
-                  ))}
-                </ul>
+                        <p
+                          className={`font-mono text-sm font-medium ${
+                            item.isOptional && !included[item.id] ? "text-ink-400 line-through" : "text-ink-900"
+                          }`}
+                        >
+                          {item.lineTotal.toFixed(2)} EGP
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
             ))}
           </div>
         </div>
 
         <div className="mt-8 lg:mt-0 lg:w-80 lg:shrink-0">
-          <div className="sticky top-24 space-y-5 rounded-xl border border-neutral-200 bg-white p-5 shadow-sm">
+          <div className="sticky top-24 space-y-5 rounded-md border border-line bg-surface p-5 shadow-[var(--shadow-token)]">
             {labelingAvailable && (
               <label className="flex items-center justify-between text-sm">
                 <span>
-                  <span className="font-medium text-neutral-900">Add labeling</span>
-                  <span className="block text-xs text-neutral-400">Child&apos;s name on every item</span>
+                  <span className="font-medium text-ink-900">Add name labels</span>
+                  <span className="block text-xs text-ink-400">Child&apos;s name on every item</span>
                 </span>
                 <input
                   type="checkbox"
                   checked={labeling}
                   onChange={(e) => setLabeling(e.target.checked)}
-                  className="h-4 w-4 accent-indigo-600"
+                  className="h-5 w-5 rounded-sm border-line accent-teal-600"
                 />
               </label>
             )}
 
             <div>
-              <p className="text-sm font-medium text-neutral-900">Delivery</p>
+              <p className="text-sm font-medium text-ink-900">Delivery</p>
               <div className="mt-2 space-y-2">
-                <label className="flex items-center justify-between rounded-md border border-neutral-200 px-3 py-2 text-sm has-[:checked]:border-indigo-500 has-[:checked]:bg-indigo-50">
+                <label className="flex items-center justify-between rounded-sm border border-line px-3 py-2 text-sm has-[:checked]:border-teal-500 has-[:checked]:bg-teal-050">
                   <span className="flex items-center gap-2">
                     <input
                       type="radio"
                       name="delivery"
                       checked={delivery === "SCHOOL_BATCH"}
                       onChange={() => setDelivery("SCHOOL_BATCH")}
+                      className="accent-teal-600"
                     />
-                    School batch
-                    <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700">
-                      cheaper
-                    </span>
+                    Collect at school
+                    <span className="rounded-sm bg-ok-bg px-2 py-0.5 text-xs font-medium text-ok">cheaper</span>
                   </span>
-                  <span className="text-neutral-500">{DELIVERY_FEE.SCHOOL_BATCH} EGP</span>
+                  <span className="font-mono text-ink-600">{DELIVERY_FEE.SCHOOL_BATCH} EGP</span>
                 </label>
-                <label className="flex items-center justify-between rounded-md border border-neutral-200 px-3 py-2 text-sm has-[:checked]:border-indigo-500 has-[:checked]:bg-indigo-50">
+                <label className="flex items-center justify-between rounded-sm border border-line px-3 py-2 text-sm has-[:checked]:border-teal-500 has-[:checked]:bg-teal-050">
                   <span className="flex items-center gap-2">
                     <input
                       type="radio"
                       name="delivery"
                       checked={delivery === "HOME"}
                       onChange={() => setDelivery("HOME")}
+                      className="accent-teal-600"
                     />
                     Home delivery
                   </span>
-                  <span className="text-neutral-500">{DELIVERY_FEE.HOME} EGP</span>
+                  <span className="font-mono text-ink-600">{DELIVERY_FEE.HOME} EGP</span>
                 </label>
               </div>
             </div>
 
             <div>
-              <p className="text-sm font-medium text-neutral-900">Child details</p>
-              <p className="text-xs text-neutral-400">Required for labelling and school batch delivery.</p>
+              <p className="text-sm font-medium text-ink-900">Child details</p>
+              <p className="text-xs text-ink-400">Required for labelling and school collection.</p>
               <div className="mt-2 space-y-2">
                 {account && account.children.length > 0 && (
                   <select
                     value={savedChildId}
                     onChange={(e) => selectSavedChild(e.target.value)}
-                    className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+                    className="w-full rounded-sm border border-line px-3 py-2 text-sm focus:outline-2 focus:outline-offset-1 focus:outline-teal-500"
                   >
                     <option value="">Enter new child...</option>
                     {account.children.map((c) => (
@@ -391,36 +402,36 @@ export default function Configurator({
                   value={childName}
                   onChange={(e) => setChildName(e.target.value)}
                   placeholder="Child's full name"
-                  className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+                  className="w-full rounded-sm border border-line px-3 py-2 text-sm focus:outline-2 focus:outline-offset-1 focus:outline-teal-500"
                 />
                 <input
                   value={childClass}
                   onChange={(e) => setChildClass(e.target.value)}
                   placeholder="Class / section"
-                  className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+                  className="w-full rounded-sm border border-line px-3 py-2 text-sm focus:outline-2 focus:outline-offset-1 focus:outline-teal-500"
                 />
                 {touched && !canContinue && (
-                  <p className="text-xs text-red-600">Child&apos;s name and class are required.</p>
+                  <p className="text-xs text-error">Child&apos;s name and class are required.</p>
                 )}
               </div>
             </div>
 
-            <div className="space-y-1 border-t border-neutral-200 pt-3 text-sm">
-              <div className="flex justify-between text-neutral-500">
+            <div className="space-y-1 border-t border-line pt-3 text-sm">
+              <div className="flex justify-between text-ink-600">
                 <span>Items</span>
-                <span>{itemsTotal.toFixed(2)} EGP</span>
+                <span className="font-mono">{itemsTotal.toFixed(2)} EGP</span>
               </div>
-              <div className="flex justify-between text-neutral-500">
+              <div className="flex justify-between text-ink-600">
                 <span>Labeling</span>
-                <span>{labelingCost.toFixed(2)} EGP</span>
+                <span className="font-mono">{labelingCost.toFixed(2)} EGP</span>
               </div>
-              <div className="flex justify-between text-neutral-500">
+              <div className="flex justify-between text-ink-600">
                 <span>Delivery</span>
-                <span>{deliveryCost.toFixed(2)} EGP</span>
+                <span className="font-mono">{deliveryCost.toFixed(2)} EGP</span>
               </div>
-              <div className="flex justify-between border-t border-neutral-200 pt-2 text-base font-semibold text-neutral-900">
+              <div className="flex justify-between border-t border-line pt-2 text-base font-semibold text-ink-900">
                 <span>Total</span>
-                <span className="text-indigo-600">{total.toFixed(2)} EGP</span>
+                <span className="font-mono text-teal-700">{total.toFixed(2)} EGP</span>
               </div>
             </div>
 
@@ -429,7 +440,7 @@ export default function Configurator({
                 setTouched(true);
                 if (canContinue) setStep("review");
               }}
-              className="w-full rounded-full bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700"
+              className="cut-tr w-full rounded-md bg-teal-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-teal-700"
             >
               Continue to checkout
             </button>
