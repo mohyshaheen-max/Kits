@@ -4,12 +4,12 @@ import { and, eq, inArray } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getDb, type Db } from "@/db";
-import { kits, kitItems, skus, orders, orderItems, payments } from "@/db/schema";
+import { kits, kitItems, skus, orders, orderItems, payments, refundLogs } from "@/db/schema";
 import { LABELING_FEE, DELIVERY_FEE, type DeliveryMethod } from "@/lib/pricing";
 import { generateOrderNumber } from "@/lib/orders";
 import { paymentProvider } from "@/lib/payments/provider";
 import { requireAdmin } from "@/lib/session";
-import { getCurrentCustomer } from "@/lib/customer-session";
+import { getCurrentCustomer, requireCustomer } from "@/lib/customer-session";
 import { chunk } from "@/lib/chunk";
 import { applyStockMovement, checkStockShortages, reserveStock } from "@/lib/wms/stock";
 
@@ -268,35 +268,85 @@ export async function reconcilePaymentAction(formData: FormData) {
   revalidatePath("/admin/orders");
 }
 
+// Shared by the admin status action and customer self-service cancel.
+// Releases whatever stock is still reserved (never touches what's already
+// been picked — that's a warehouse exception, not a cancellation), and if
+// money was actually collected, logs a refund rather than silently
+// forgetting about it. Caller is responsible for authorization and the
+// "is this order even cancellable" check.
+async function cancelOrder(db: Db, orderId: number, actor: string) {
+  const [order] = await db.select().from(orders).where(eq(orders.id, orderId)).limit(1);
+  if (!order || order.fulfilmentStatus === "cancelled") return;
+
+  const lines = await db.select().from(orderItems).where(eq(orderItems.orderId, orderId));
+  for (const line of lines) {
+    const unpicked = line.qty - (line.pickedQty ?? 0);
+    if (unpicked > 0) {
+      await applyStockMovement(db, {
+        skuId: line.skuId,
+        delta: -unpicked,
+        reason: "RELEASE",
+        orderId,
+        note: "Order cancelled",
+      });
+    }
+  }
+
+  await db.update(orders).set({ fulfilmentStatus: "cancelled" }).where(eq(orders.id, orderId));
+
+  // COD that was never collected just cancels — nothing to refund. Money
+  // that was actually taken (card, or COD already reconciled) gets a
+  // logged refund instead of silently vanishing.
+  if (order.paymentStatus === "paid") {
+    await db.update(orders).set({ paymentStatus: "refunded" }).where(eq(orders.id, orderId));
+    await db.update(payments).set({ status: "refunded" }).where(eq(payments.orderId, orderId));
+    await db.insert(refundLogs).values({
+      orderId,
+      amount: order.total,
+      reason: "cancellation",
+      createdBy: actor,
+    });
+  }
+}
+
 export async function updateFulfilmentStatusAction(formData: FormData) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const orderId = Number(formData.get("order_id"));
   const status = String(formData.get("status") ?? "") as "pending" | "picking" | "packed" | "delivered" | "cancelled";
   if (!orderId || !["pending", "picking", "packed", "delivered", "cancelled"].includes(status)) return;
 
   const db = getDb();
-  const [order] = await db.select().from(orders).where(eq(orders.id, orderId)).limit(1);
-  if (!order) return;
 
-  // Cancelling before pick releases the reservation instead of leaving it
-  // stuck holding stock nothing will ever collect.
-  if (status === "cancelled" && order.fulfilmentStatus !== "cancelled") {
-    const lines = await db.select().from(orderItems).where(eq(orderItems.orderId, orderId));
-    for (const line of lines) {
-      const unpicked = line.qty - (line.pickedQty ?? 0);
-      if (unpicked > 0) {
-        await applyStockMovement(db, {
-          skuId: line.skuId,
-          delta: -unpicked,
-          reason: "RELEASE",
-          orderId,
-          note: `Order cancelled`,
-        });
-      }
-    }
+  if (status === "cancelled") {
+    await cancelOrder(db, orderId, admin.email);
+  } else {
+    await db.update(orders).set({ fulfilmentStatus: status }).where(eq(orders.id, orderId));
   }
 
-  await db.update(orders).set({ fulfilmentStatus: status }).where(eq(orders.id, orderId));
   revalidatePath(`/admin/orders/${orderId}`);
   revalidatePath("/admin/orders");
+}
+
+// Customer self-service cancel — only for their own account's orders
+// (guest orders have no customerId to check against, so they can't
+// self-cancel; an admin can always cancel on their behalf), and only
+// before packing starts. Mirrors the old spec's "Received/Processing only"
+// rule against our fulfilment states.
+export async function cancelOrderAction(_prev: { error?: string } | undefined, formData: FormData) {
+  const customer = await requireCustomer();
+  const orderId = Number(formData.get("order_id"));
+  if (!orderId) return { error: "Invalid order." };
+
+  const db = getDb();
+  const [order] = await db.select().from(orders).where(eq(orders.id, orderId)).limit(1);
+  if (!order || order.customerId !== customer.id) return { error: "Order not found." };
+  if (!["pending", "picking"].includes(order.fulfilmentStatus)) {
+    return { error: "This order can no longer be cancelled — it's already being packed or has shipped." };
+  }
+
+  await cancelOrder(db, orderId, customer.email);
+
+  revalidatePath(`/orders/${order.orderNumber}`);
+  revalidatePath("/account/orders");
+  return { error: undefined };
 }

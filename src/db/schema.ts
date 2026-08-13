@@ -479,3 +479,68 @@ export const childrenRelations = relations(children, ({ one }) => ({
 export const addressesRelations = relations(addresses, ({ one }) => ({
   customer: one(customers, { fields: [addresses.customerId], references: [customers.id] }),
 }));
+
+// ---------------------------------------------------------------------------
+// Cancellations & returns. Cancellation itself needs no new table — it's
+// just orders.fulfilmentStatus flipping to "cancelled" plus a stock release
+// (see cancelOrder() in src/lib/actions/orders.ts). Returns are only ever
+// allowed after delivery, so they get their own request/decision trail:
+// one returns row per request, one return_items row per line+qty, and a
+// refund_logs row per amount actually agreed — logged, never inferred.
+// ---------------------------------------------------------------------------
+
+export const returns = sqliteTable("returns", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  orderId: integer("order_id")
+    .notNull()
+    .references(() => orders.id),
+  reason: text("reason").notNull(),
+  message: text("message"),
+  status: text("status", { enum: ["requested", "approved", "declined"] })
+    .notNull()
+    .default("requested"),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  decidedAt: text("decided_at"),
+  decidedBy: text("decided_by"),
+});
+
+export const returnItems = sqliteTable("return_items", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  returnId: integer("return_id")
+    .notNull()
+    .references(() => returns.id),
+  orderItemId: integer("order_item_id")
+    .notNull()
+    .references(() => orderItems.id),
+  qty: integer("qty").notNull(),
+  condition: text("condition", { enum: ["pending", "good", "damaged", "rejected"] })
+    .notNull()
+    .default("pending"),
+});
+
+export const refundLogs = sqliteTable("refund_logs", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  orderId: integer("order_id")
+    .notNull()
+    .references(() => orders.id),
+  returnId: integer("return_id").references(() => returns.id),
+  amount: real("amount").notNull(),
+  reason: text("reason").notNull(),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  createdBy: text("created_by"),
+});
+
+export const returnsRelations = relations(returns, ({ one, many }) => ({
+  order: one(orders, { fields: [returns.orderId], references: [orders.id] }),
+  items: many(returnItems),
+}));
+
+export const returnItemsRelations = relations(returnItems, ({ one }) => ({
+  return: one(returns, { fields: [returnItems.returnId], references: [returns.id] }),
+  orderItem: one(orderItems, { fields: [returnItems.orderItemId], references: [orderItems.id] }),
+}));
+
+export const refundLogsRelations = relations(refundLogs, ({ one }) => ({
+  order: one(orders, { fields: [refundLogs.orderId], references: [orders.id] }),
+  return: one(returns, { fields: [refundLogs.returnId], references: [returns.id] }),
+}));
