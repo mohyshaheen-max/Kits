@@ -43,46 +43,46 @@ export default async function ListDetailPage({ params }: { params: Promise<{ id:
   return (
     <div className="max-w-4xl space-y-6">
       <div>
-        <Link href={`/admin/schools/${list.schoolId}`} className="text-xs text-neutral-400 hover:text-neutral-700">
+        <Link href={`/admin/schools/${list.schoolId}`} className="text-xs text-ink-400 hover:text-ink-600">
           ← {list.schoolName}
         </Link>
-        <h1 className="mt-1 text-xl font-semibold text-neutral-900">
+        <h1 className="mt-1 text-xl font-semibold text-ink-900">
           {list.schoolName} — {list.gradeLabel} — {list.academicYear}
         </h1>
         <div className="mt-2 flex items-center gap-3">
           <form action={updateListStatusAction} className="flex items-center gap-2">
             <input type="hidden" name="id" value={list.id} />
-            <select name="status" defaultValue={list.status} className="rounded-md border border-neutral-300 px-2 py-1 text-xs">
+            <select name="status" defaultValue={list.status} className="rounded-md border border-line px-2 py-1 text-xs">
               <option value="draft">draft</option>
               <option value="live">live</option>
               <option value="archived">archived</option>
             </select>
-            <button type="submit" className="text-xs font-medium text-neutral-500 hover:text-neutral-900">
+            <button type="submit" className="text-xs font-medium text-ink-400 hover:text-ink-900">
               Update status
             </button>
           </form>
           {unresolvedNullQty > 0 && (
-            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
+            <span className="rounded-sm bg-warn-bg px-2 py-0.5 text-xs font-medium text-warn">
               {unresolvedNullQty} item(s) missing a quantity
             </span>
           )}
           {excludedCount > 0 && (
-            <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-600">
+            <span className="rounded-sm bg-canvas px-2 py-0.5 text-xs font-medium text-ink-600">
               {excludedCount} excluded
             </span>
           )}
         </div>
       </div>
 
-      <div className="rounded-lg border border-neutral-200 bg-white p-4">
+      <div className="rounded-md border border-line bg-surface p-4">
         {existingKits.length > 0 ? (
           <div className="flex items-center justify-between">
-            <p className="text-sm text-neutral-600">
+            <p className="text-sm text-ink-600">
               {existingKits.length} kit{existingKits.length > 1 ? "s" : ""} generated from this list.
             </p>
             <div className="flex gap-3">
               {existingKits.map((k) => (
-                <Link key={k.id} href={`/admin/kits/${k.id}`} className="text-sm font-medium text-neutral-900 hover:underline">
+                <Link key={k.id} href={`/admin/kits/${k.id}`} className="text-sm font-medium text-ink-900 hover:underline">
                   Open {k.name} →
                 </Link>
               ))}
@@ -91,12 +91,12 @@ export default async function ListDetailPage({ params }: { params: Promise<{ id:
         ) : (
           <form action={generateKitFromListAction} className="flex items-center justify-between">
             <input type="hidden" name="list_id" value={list.id} />
-            <p className="text-sm text-neutral-600">
+            <p className="text-sm text-ink-600">
               No kit yet. Generating copies every sellable line into an editable kit and auto-drops exclusions.
             </p>
             <button
               type="submit"
-              className="shrink-0 rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800"
+              className="shrink-0 rounded-md bg-teal-600 px-4 py-2 text-sm font-medium text-white hover:bg-teal-700"
             >
               Generate kit from list
             </button>
@@ -104,9 +104,9 @@ export default async function ListDetailPage({ params }: { params: Promise<{ id:
         )}
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-neutral-200 bg-white">
+      <div className="overflow-hidden rounded-md border border-line bg-surface">
         <table className="w-full text-left text-sm">
-          <thead className="bg-neutral-50 text-xs uppercase tracking-wide text-neutral-500">
+          <thead className="bg-canvas text-xs uppercase tracking-wide text-ink-400">
             <tr>
               <th className="px-4 py-2 font-medium">Subject</th>
               <th className="px-4 py-2 font-medium">Item</th>
@@ -116,23 +116,23 @@ export default async function ListDetailPage({ params }: { params: Promise<{ id:
               <th className="px-4 py-2 font-medium"></th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-neutral-100">
+          <tbody className="divide-y divide-line-2">
             {items.map((item) => {
               const sku = item.skuId ? skuMap[item.skuId] : undefined;
               return (
-                <tr key={item.id} className={item.isExcluded ? "bg-red-50/40" : ""}>
-                  <td className="px-4 py-2 text-neutral-600">{item.subject ?? "—"}</td>
-                  <td className="px-4 py-2 text-neutral-900">
+                <tr key={item.id} className={item.isExcluded ? "bg-error-bg/40" : ""}>
+                  <td className="px-4 py-2 text-ink-600">{item.subject ?? "—"}</td>
+                  <td className="px-4 py-2 text-ink-900">
                     {sku ? sku.name : item.rawText}
                     {item.isExcluded && (
-                      <p className="text-xs text-red-600">{item.exclusionReason}</p>
+                      <p className="text-xs text-error">{item.exclusionReason}</p>
                     )}
                   </td>
                   <td className="px-4 py-2">
                     {item.isExcluded ? (
                       "—"
                     ) : item.qty === null ? (
-                      <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
+                      <span className="rounded-sm bg-warn-bg px-2 py-0.5 text-xs font-medium text-warn">
                         NULL
                       </span>
                     ) : (
@@ -141,22 +141,22 @@ export default async function ListDetailPage({ params }: { params: Promise<{ id:
                   </td>
                   <td className="px-4 py-2 space-x-1">
                     {item.isOptional && (
-                      <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
+                      <span className="rounded-sm bg-teal-100 px-2 py-0.5 text-xs font-medium text-teal-800">
                         optional
                       </span>
                     )}
                     {item.isExcluded && (
-                      <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">
+                      <span className="rounded-sm bg-error-bg px-2 py-0.5 text-xs font-medium text-error">
                         excluded
                       </span>
                     )}
                   </td>
-                  <td className="px-4 py-2 text-xs text-neutral-500">{item.notes ?? "—"}</td>
+                  <td className="px-4 py-2 text-xs text-ink-400">{item.notes ?? "—"}</td>
                   <td className="px-4 py-2 text-right">
                     <form action={deleteListItemAction}>
                       <input type="hidden" name="id" value={item.id} />
                       <input type="hidden" name="list_id" value={list.id} />
-                      <button type="submit" className="text-xs text-neutral-500 hover:text-red-600">
+                      <button type="submit" className="text-xs text-ink-400 hover:text-error">
                         Remove
                       </button>
                     </form>
@@ -166,7 +166,7 @@ export default async function ListDetailPage({ params }: { params: Promise<{ id:
             })}
             {items.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-4 text-center text-sm text-neutral-400">
+                <td colSpan={6} className="px-4 py-4 text-center text-sm text-ink-400">
                   No items yet.
                 </td>
               </tr>
@@ -175,13 +175,13 @@ export default async function ListDetailPage({ params }: { params: Promise<{ id:
         </table>
       </div>
 
-      <details className="rounded-lg border border-neutral-200 bg-white p-4">
-        <summary className="cursor-pointer text-sm font-medium text-neutral-900">Add item</summary>
+      <details className="rounded-md border border-line bg-surface p-4">
+        <summary className="cursor-pointer text-sm font-medium text-ink-900">Add item</summary>
         <form action={addListItemAction} className="mt-4 space-y-3">
           <input type="hidden" name="list_id" value={list.id} />
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs text-neutral-500">SKU (leave blank for excluded/unmapped items)</label>
+              <label className="block text-xs text-ink-400">SKU (leave blank for excluded/unmapped items)</label>
               <select name="sku_id" className={inputClass} defaultValue="">
                 <option value="">— none —</option>
                 {allSkus.map((s) => (
@@ -192,41 +192,41 @@ export default async function ListDetailPage({ params }: { params: Promise<{ id:
               </select>
             </div>
             <div>
-              <label className="block text-xs text-neutral-500">Raw text (for excluded/unmapped items)</label>
+              <label className="block text-xs text-ink-400">Raw text (for excluded/unmapped items)</label>
               <input name="raw_text" className={inputClass} placeholder="e.g. Arabic Language Textbook" />
             </div>
           </div>
           <div className="grid grid-cols-4 gap-3">
             <div>
-              <label className="block text-xs text-neutral-500">Qty (blank = unspecified)</label>
+              <label className="block text-xs text-ink-400">Qty (blank = unspecified)</label>
               <input name="qty" type="number" min={0} className={inputClass} />
             </div>
             <div>
-              <label className="block text-xs text-neutral-500">Subject</label>
+              <label className="block text-xs text-ink-400">Subject</label>
               <input name="subject" className={inputClass} />
             </div>
             <div className="flex items-end gap-2 pb-2">
-              <label className="flex items-center gap-1 text-xs text-neutral-600">
+              <label className="flex items-center gap-1 text-xs text-ink-600">
                 <input type="checkbox" name="is_optional" value="1" /> Optional
               </label>
             </div>
             <div className="flex items-end gap-2 pb-2">
-              <label className="flex items-center gap-1 text-xs text-neutral-600">
+              <label className="flex items-center gap-1 text-xs text-ink-600">
                 <input type="checkbox" name="is_excluded" value="1" /> Excluded
               </label>
             </div>
           </div>
           <div>
-            <label className="block text-xs text-neutral-500">Exclusion reason (if excluded)</label>
+            <label className="block text-xs text-ink-400">Exclusion reason (if excluded)</label>
             <input name="exclusion_reason" className={inputClass} placeholder="Textbook — bookshop supply chain, not stationery" />
           </div>
           <div>
-            <label className="block text-xs text-neutral-500">Notes</label>
+            <label className="block text-xs text-ink-400">Notes</label>
             <input name="notes" className={inputClass} />
           </div>
           <button
             type="submit"
-            className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800"
+            className="rounded-md bg-teal-600 px-4 py-2 text-sm font-medium text-white hover:bg-teal-700"
           >
             Add item
           </button>

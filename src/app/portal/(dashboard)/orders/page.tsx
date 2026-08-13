@@ -6,11 +6,11 @@ import { requireSchoolPortal } from "@/lib/school-session";
 export const dynamic = "force-dynamic";
 
 const FULFILMENT_STYLE: Record<string, string> = {
-  pending: "bg-neutral-100 text-neutral-600",
-  picking: "bg-blue-100 text-blue-700",
-  packed: "bg-blue-100 text-blue-700",
-  delivered: "bg-emerald-100 text-emerald-700",
-  cancelled: "bg-red-100 text-red-700",
+  pending: "bg-canvas text-ink-600",
+  picking: "bg-teal-100 text-teal-800",
+  packed: "bg-teal-100 text-teal-800",
+  delivered: "bg-ok-bg text-ok",
+  cancelled: "bg-error-bg text-error",
 };
 
 export default async function PortalOrdersPage() {
@@ -34,14 +34,14 @@ export default async function PortalOrdersPage() {
 
   return (
     <div>
-      <h1 className="text-xl font-semibold text-neutral-900">Orders via your referral link</h1>
-      <p className="mt-1 text-sm text-neutral-500">
+      <h1 className="text-xl font-semibold text-ink-900">Orders via your referral link</h1>
+      <p className="mt-1 text-sm text-ink-400">
         {rows.length} order{rows.length === 1 ? "" : "s"}
       </p>
 
-      <div className="mt-6 overflow-hidden rounded-lg border border-neutral-200 bg-white">
+      <div className="mt-6 overflow-hidden rounded-md border border-line bg-surface">
         <table className="w-full text-left text-sm">
-          <thead className="bg-neutral-50 text-xs uppercase tracking-wide text-neutral-500">
+          <thead className="bg-canvas text-xs uppercase tracking-wide text-ink-400">
             <tr>
               <th className="px-4 py-2 font-medium">Order</th>
               <th className="px-4 py-2 font-medium">Grade</th>
@@ -49,20 +49,20 @@ export default async function PortalOrdersPage() {
               <th className="px-4 py-2 font-medium">Status</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-neutral-100">
+          <tbody className="divide-y divide-line-2">
             {rows.map((o) => (
               <tr key={o.id}>
                 <td className="px-4 py-3">
-                  <p className="font-medium text-neutral-900">{o.orderNumber}</p>
-                  <p className="text-xs text-neutral-400">{new Date(o.createdAt).toLocaleString()}</p>
+                  <p className="font-mono font-medium text-ink-900">{o.orderNumber}</p>
+                  <p className="text-xs text-ink-400">{new Date(o.createdAt).toLocaleString()}</p>
                 </td>
-                <td className="px-4 py-3 text-neutral-600">{o.gradeLabel ?? "—"}</td>
-                <td className="px-4 py-3 text-neutral-600">
+                <td className="px-4 py-3 text-ink-600">{o.gradeLabel ?? "—"}</td>
+                <td className="px-4 py-3 text-ink-600">
                   {o.childName} · {o.childClass}
                 </td>
                 <td className="px-4 py-3">
                   <span
-                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${FULFILMENT_STYLE[o.fulfilmentStatus]}`}
+                    className={`rounded-sm px-2 py-0.5 text-xs font-medium ${FULFILMENT_STYLE[o.fulfilmentStatus]}`}
                   >
                     {o.fulfilmentStatus}
                   </span>
@@ -71,7 +71,7 @@ export default async function PortalOrdersPage() {
             ))}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={4} className="px-4 py-6 text-center text-sm text-neutral-400">
+                <td colSpan={4} className="px-4 py-6 text-center text-sm text-ink-400">
                   No orders yet.
                 </td>
               </tr>

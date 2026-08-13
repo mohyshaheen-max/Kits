@@ -59,23 +59,23 @@ export default async function SchoolDetailPage({ params }: { params: Promise<{ i
   return (
     <div className="max-w-4xl space-y-10">
       <div>
-        <Link href="/admin/schools" className="text-xs text-neutral-400 hover:text-neutral-700">
+        <Link href="/admin/schools" className="text-xs text-ink-400 hover:text-ink-600">
           ← Schools
         </Link>
-        <h1 className="mt-1 text-xl font-semibold text-neutral-900">{school.name}</h1>
-        <p className="text-sm text-neutral-500">/s/{school.referralSlug}</p>
+        <h1 className="mt-1 text-xl font-semibold text-ink-900">{school.name}</h1>
+        <p className="text-sm text-ink-400">/s/{school.referralSlug}</p>
       </div>
 
       <section>
-        <h2 className="text-sm font-semibold text-neutral-900">Details</h2>
+        <h2 className="text-sm font-semibold text-ink-900">Details</h2>
         <SchoolDetailsForm school={school} />
       </section>
 
       <section>
-        <h2 className="text-sm font-semibold text-neutral-900">Grades</h2>
-        <div className="mt-3 overflow-hidden rounded-lg border border-neutral-200 bg-white">
+        <h2 className="text-sm font-semibold text-ink-900">Grades</h2>
+        <div className="mt-3 overflow-hidden rounded-md border border-line bg-surface">
           <table className="w-full text-left text-sm">
-            <thead className="bg-neutral-50 text-xs uppercase tracking-wide text-neutral-500">
+            <thead className="bg-canvas text-xs uppercase tracking-wide text-ink-400">
               <tr>
                 <th className="px-4 py-2 font-medium">Label</th>
                 <th className="px-4 py-2 font-medium">Curriculum</th>
@@ -83,15 +83,15 @@ export default async function SchoolDetailPage({ params }: { params: Promise<{ i
                 <th className="px-4 py-2 font-medium"></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-neutral-100">
+            <tbody className="divide-y divide-line-2">
               {schoolGrades.map((g) => (
                 <tr key={g.id}>
-                  <td className="px-4 py-2 font-medium text-neutral-900">{g.label}</td>
-                  <td className="px-4 py-2 text-neutral-600">{g.curriculum ?? "—"}</td>
+                  <td className="px-4 py-2 font-medium text-ink-900">{g.label}</td>
+                  <td className="px-4 py-2 text-ink-600">{g.curriculum ?? "—"}</td>
                   <td className="px-4 py-2">
                     <span
-                      className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                        g.active ? "bg-emerald-100 text-emerald-700" : "bg-neutral-100 text-neutral-500"
+                      className={`rounded-sm px-2 py-0.5 text-xs font-medium ${
+                        g.active ? "bg-ok-bg text-ok" : "bg-canvas text-ink-400"
                       }`}
                     >
                       {g.active ? "active" : "inactive"}
@@ -102,7 +102,7 @@ export default async function SchoolDetailPage({ params }: { params: Promise<{ i
                       <input type="hidden" name="id" value={g.id} />
                       <input type="hidden" name="school_id" value={schoolId} />
                       <input type="hidden" name="active" value={g.active ? "1" : "0"} />
-                      <button type="submit" className="text-xs text-neutral-500 hover:text-neutral-900">
+                      <button type="submit" className="text-xs text-ink-400 hover:text-ink-900">
                         {g.active ? "Deactivate" : "Activate"}
                       </button>
                     </form>
@@ -111,30 +111,30 @@ export default async function SchoolDetailPage({ params }: { params: Promise<{ i
               ))}
               {schoolGrades.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="px-4 py-4 text-center text-sm text-neutral-400">
+                  <td colSpan={4} className="px-4 py-4 text-center text-sm text-ink-400">
                     No grades yet.
                   </td>
                 </tr>
               )}
             </tbody>
           </table>
-          <form action={createGradeAction} className="flex items-end gap-2 border-t border-neutral-200 p-3">
+          <form action={createGradeAction} className="flex items-end gap-2 border-t border-line p-3">
             <input type="hidden" name="school_id" value={schoolId} />
             <div className="flex-1">
-              <label className="block text-xs text-neutral-500">Label</label>
+              <label className="block text-xs text-ink-400">Label</label>
               <input name="label" required placeholder="Year 5" className={inputClass} />
             </div>
             <div className="flex-1">
-              <label className="block text-xs text-neutral-500">Curriculum</label>
+              <label className="block text-xs text-ink-400">Curriculum</label>
               <input name="curriculum" placeholder="National" className={inputClass} />
             </div>
             <div className="w-20">
-              <label className="block text-xs text-neutral-500">Order</label>
+              <label className="block text-xs text-ink-400">Order</label>
               <input name="sort_order" type="number" defaultValue={schoolGrades.length} className={inputClass} />
             </div>
             <button
               type="submit"
-              className="h-[38px] rounded-md bg-neutral-900 px-3 text-sm font-medium text-white hover:bg-neutral-800"
+              className="h-[38px] rounded-md bg-teal-600 px-3 text-sm font-medium text-white hover:bg-teal-700"
             >
               Add grade
             </button>
@@ -143,14 +143,14 @@ export default async function SchoolDetailPage({ params }: { params: Promise<{ i
       </section>
 
       <section>
-        <h2 className="text-sm font-semibold text-neutral-900">Brand rules</h2>
-        <p className="mt-1 text-xs text-neutral-500">
+        <h2 className="text-sm font-semibold text-ink-900">Brand rules</h2>
+        <p className="mt-1 text-xs text-ink-400">
           REQUIRE restricts substitutes to the same brand. FORBID blocks a brand outright — it beats a stock
           shortage.
         </p>
-        <div className="mt-3 overflow-hidden rounded-lg border border-neutral-200 bg-white">
+        <div className="mt-3 overflow-hidden rounded-md border border-line bg-surface">
           <table className="w-full text-left text-sm">
-            <thead className="bg-neutral-50 text-xs uppercase tracking-wide text-neutral-500">
+            <thead className="bg-canvas text-xs uppercase tracking-wide text-ink-400">
               <tr>
                 <th className="px-4 py-2 font-medium">Category</th>
                 <th className="px-4 py-2 font-medium">Brand</th>
@@ -159,26 +159,26 @@ export default async function SchoolDetailPage({ params }: { params: Promise<{ i
                 <th className="px-4 py-2 font-medium"></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-neutral-100">
+            <tbody className="divide-y divide-line-2">
               {brandRules.map((r) => (
                 <tr key={r.id}>
-                  <td className="px-4 py-2 text-neutral-900">{r.skuCategory}</td>
-                  <td className="px-4 py-2 text-neutral-900">{r.brand}</td>
+                  <td className="px-4 py-2 text-ink-900">{r.skuCategory}</td>
+                  <td className="px-4 py-2 text-ink-900">{r.brand}</td>
                   <td className="px-4 py-2">
                     <span
-                      className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                        r.rule === "FORBID" ? "bg-red-100 text-red-700" : "bg-blue-100 text-blue-700"
+                      className={`rounded-sm px-2 py-0.5 text-xs font-medium ${
+                        r.rule === "FORBID" ? "bg-error-bg text-error" : "bg-teal-100 text-teal-800"
                       }`}
                     >
                       {r.rule}
                     </span>
                   </td>
-                  <td className="px-4 py-2 text-neutral-500">{r.note ?? "—"}</td>
+                  <td className="px-4 py-2 text-ink-400">{r.note ?? "—"}</td>
                   <td className="px-4 py-2 text-right">
                     <form action={deleteBrandRuleAction}>
                       <input type="hidden" name="id" value={r.id} />
                       <input type="hidden" name="school_id" value={schoolId} />
-                      <button type="submit" className="text-xs text-neutral-500 hover:text-red-600">
+                      <button type="submit" className="text-xs text-ink-400 hover:text-error">
                         Remove
                       </button>
                     </form>
@@ -187,37 +187,37 @@ export default async function SchoolDetailPage({ params }: { params: Promise<{ i
               ))}
               {brandRules.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-4 py-4 text-center text-sm text-neutral-400">
+                  <td colSpan={5} className="px-4 py-4 text-center text-sm text-ink-400">
                     No brand rules yet.
                   </td>
                 </tr>
               )}
             </tbody>
           </table>
-          <form action={createBrandRuleAction} className="grid grid-cols-5 items-end gap-2 border-t border-neutral-200 p-3">
+          <form action={createBrandRuleAction} className="grid grid-cols-5 items-end gap-2 border-t border-line p-3">
             <input type="hidden" name="school_id" value={schoolId} />
             <div>
-              <label className="block text-xs text-neutral-500">Category</label>
+              <label className="block text-xs text-ink-400">Category</label>
               <input name="sku_category" required placeholder="Paint" className={inputClass} />
             </div>
             <div>
-              <label className="block text-xs text-neutral-500">Brand</label>
+              <label className="block text-xs text-ink-400">Brand</label>
               <input name="brand" required placeholder="Jovi" className={inputClass} />
             </div>
             <div>
-              <label className="block text-xs text-neutral-500">Rule</label>
+              <label className="block text-xs text-ink-400">Rule</label>
               <select name="rule" className={inputClass} defaultValue="FORBID">
                 <option value="REQUIRE">REQUIRE</option>
                 <option value="FORBID">FORBID</option>
               </select>
             </div>
             <div>
-              <label className="block text-xs text-neutral-500">Note</label>
+              <label className="block text-xs text-ink-400">Note</label>
               <input name="note" className={inputClass} />
             </div>
             <button
               type="submit"
-              className="h-[38px] rounded-md bg-neutral-900 px-3 text-sm font-medium text-white hover:bg-neutral-800"
+              className="h-[38px] rounded-md bg-teal-600 px-3 text-sm font-medium text-white hover:bg-teal-700"
             >
               Add rule
             </button>
@@ -226,10 +226,10 @@ export default async function SchoolDetailPage({ params }: { params: Promise<{ i
       </section>
 
       <section>
-        <h2 className="text-sm font-semibold text-neutral-900">Lists</h2>
-        <div className="mt-3 overflow-hidden rounded-lg border border-neutral-200 bg-white">
+        <h2 className="text-sm font-semibold text-ink-900">Lists</h2>
+        <div className="mt-3 overflow-hidden rounded-md border border-line bg-surface">
           <table className="w-full text-left text-sm">
-            <thead className="bg-neutral-50 text-xs uppercase tracking-wide text-neutral-500">
+            <thead className="bg-canvas text-xs uppercase tracking-wide text-ink-400">
               <tr>
                 <th className="px-4 py-2 font-medium">Grade</th>
                 <th className="px-4 py-2 font-medium">Academic year</th>
@@ -238,27 +238,27 @@ export default async function SchoolDetailPage({ params }: { params: Promise<{ i
                 <th className="px-4 py-2 font-medium"></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-neutral-100">
+            <tbody className="divide-y divide-line-2">
               {lists.map((l) => (
                 <tr key={l.id}>
-                  <td className="px-4 py-2 text-neutral-900">{l.gradeLabel}</td>
-                  <td className="px-4 py-2 text-neutral-600">{l.academicYear}</td>
+                  <td className="px-4 py-2 text-ink-900">{l.gradeLabel}</td>
+                  <td className="px-4 py-2 text-ink-600">{l.academicYear}</td>
                   <td className="px-4 py-2">
                     <span
-                      className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                      className={`rounded-sm px-2 py-0.5 text-xs font-medium ${
                         l.status === "live"
-                          ? "bg-emerald-100 text-emerald-700"
+                          ? "bg-ok-bg text-ok"
                           : l.status === "archived"
-                            ? "bg-neutral-100 text-neutral-500"
-                            : "bg-amber-100 text-amber-700"
+                            ? "bg-canvas text-ink-400"
+                            : "bg-warn-bg text-warn"
                       }`}
                     >
                       {l.status}
                     </span>
                   </td>
-                  <td className="px-4 py-2 text-neutral-600">{l.itemCount}</td>
+                  <td className="px-4 py-2 text-ink-600">{l.itemCount}</td>
                   <td className="px-4 py-2 text-right">
-                    <Link href={`/admin/lists/${l.id}`} className="text-xs font-medium text-neutral-700 hover:underline">
+                    <Link href={`/admin/lists/${l.id}`} className="text-xs font-medium text-ink-600 hover:underline">
                       Open
                     </Link>
                   </td>
@@ -266,17 +266,17 @@ export default async function SchoolDetailPage({ params }: { params: Promise<{ i
               ))}
               {lists.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-4 py-4 text-center text-sm text-neutral-400">
+                  <td colSpan={5} className="px-4 py-4 text-center text-sm text-ink-400">
                     No lists yet.
                   </td>
                 </tr>
               )}
             </tbody>
           </table>
-          <form action={createListAction} className="flex items-end gap-2 border-t border-neutral-200 p-3">
+          <form action={createListAction} className="flex items-end gap-2 border-t border-line p-3">
             <input type="hidden" name="school_id" value={schoolId} />
             <div className="flex-1">
-              <label className="block text-xs text-neutral-500">Grade</label>
+              <label className="block text-xs text-ink-400">Grade</label>
               <select name="grade_id" required className={inputClass}>
                 {schoolGrades.map((g) => (
                   <option key={g.id} value={g.id}>
@@ -286,12 +286,12 @@ export default async function SchoolDetailPage({ params }: { params: Promise<{ i
               </select>
             </div>
             <div className="flex-1">
-              <label className="block text-xs text-neutral-500">Academic year</label>
+              <label className="block text-xs text-ink-400">Academic year</label>
               <input name="academic_year" required placeholder="2026/27" className={inputClass} />
             </div>
             <button
               type="submit"
-              className="h-[38px] rounded-md bg-neutral-900 px-3 text-sm font-medium text-white hover:bg-neutral-800"
+              className="h-[38px] rounded-md bg-teal-600 px-3 text-sm font-medium text-white hover:bg-teal-700"
             >
               New list
             </button>
@@ -300,14 +300,14 @@ export default async function SchoolDetailPage({ params }: { params: Promise<{ i
       </section>
 
       <section>
-        <h2 className="text-sm font-semibold text-neutral-900">School Portal access</h2>
-        <p className="mt-1 text-xs text-neutral-500">
+        <h2 className="text-sm font-semibold text-ink-900">School Portal access</h2>
+        <p className="mt-1 text-xs text-ink-400">
           Logins for {school.name}&apos;s staff at <code>/portal/login</code> — referral link, orders and commission
           only. They never see prices, cost, or other schools.
         </p>
-        <div className="mt-3 overflow-hidden rounded-lg border border-neutral-200 bg-white">
+        <div className="mt-3 overflow-hidden rounded-md border border-line bg-surface">
           <table className="w-full text-left text-sm">
-            <thead className="bg-neutral-50 text-xs uppercase tracking-wide text-neutral-500">
+            <thead className="bg-canvas text-xs uppercase tracking-wide text-ink-400">
               <tr>
                 <th className="px-4 py-2 font-medium">Email</th>
                 <th className="px-4 py-2 font-medium">Name</th>
@@ -315,11 +315,11 @@ export default async function SchoolDetailPage({ params }: { params: Promise<{ i
                 <th className="px-4 py-2 font-medium"></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-neutral-100">
+            <tbody className="divide-y divide-line-2">
               {portalLogins.map((pa) => (
                 <tr key={pa.id}>
-                  <td className="px-4 py-2 font-medium text-neutral-900">{pa.email}</td>
-                  <td className="px-4 py-2 text-neutral-600">{pa.name ?? "—"}</td>
+                  <td className="px-4 py-2 font-medium text-ink-900">{pa.email}</td>
+                  <td className="px-4 py-2 text-ink-600">{pa.name ?? "—"}</td>
                   <td className="px-4 py-2">
                     <form action={resetSchoolAdminPasswordAction} className="flex items-center gap-2">
                       <input type="hidden" name="id" value={pa.id} />
@@ -330,9 +330,9 @@ export default async function SchoolDetailPage({ params }: { params: Promise<{ i
                         placeholder="New password"
                         required
                         minLength={8}
-                        className="w-36 rounded-md border border-neutral-300 px-2 py-1 text-xs focus:border-neutral-500 focus:outline-none"
+                        className="w-36 rounded-md border border-line px-2 py-1 text-xs focus:outline-2 focus:outline-offset-1 focus:outline-teal-500"
                       />
-                      <button type="submit" className="text-xs text-neutral-500 hover:text-neutral-900">
+                      <button type="submit" className="text-xs text-ink-400 hover:text-ink-900">
                         Reset
                       </button>
                     </form>
@@ -341,7 +341,7 @@ export default async function SchoolDetailPage({ params }: { params: Promise<{ i
                     <form action={deleteSchoolAdminAction}>
                       <input type="hidden" name="id" value={pa.id} />
                       <input type="hidden" name="school_id" value={schoolId} />
-                      <button type="submit" className="text-xs text-neutral-500 hover:text-red-600">
+                      <button type="submit" className="text-xs text-ink-400 hover:text-error">
                         Remove
                       </button>
                     </form>
@@ -350,7 +350,7 @@ export default async function SchoolDetailPage({ params }: { params: Promise<{ i
               ))}
               {portalLogins.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="px-4 py-4 text-center text-sm text-neutral-400">
+                  <td colSpan={4} className="px-4 py-4 text-center text-sm text-ink-400">
                     No portal logins yet.
                   </td>
                 </tr>
@@ -362,10 +362,10 @@ export default async function SchoolDetailPage({ params }: { params: Promise<{ i
       </section>
 
       <section>
-        <h2 className="text-sm font-semibold text-neutral-900">List update requests</h2>
-        <div className="mt-3 overflow-hidden rounded-lg border border-neutral-200 bg-white">
+        <h2 className="text-sm font-semibold text-ink-900">List update requests</h2>
+        <div className="mt-3 overflow-hidden rounded-md border border-line bg-surface">
           <table className="w-full text-left text-sm">
-            <thead className="bg-neutral-50 text-xs uppercase tracking-wide text-neutral-500">
+            <thead className="bg-canvas text-xs uppercase tracking-wide text-ink-400">
               <tr>
                 <th className="px-4 py-2 font-medium">Grade</th>
                 <th className="px-4 py-2 font-medium">Note</th>
@@ -373,19 +373,19 @@ export default async function SchoolDetailPage({ params }: { params: Promise<{ i
                 <th className="px-4 py-2 font-medium"></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-neutral-100">
+            <tbody className="divide-y divide-line-2">
               {updateRequests.map((r) => (
                 <tr key={r.id}>
-                  <td className="px-4 py-2 text-neutral-900">{r.gradeLabel ?? "All grades"}</td>
-                  <td className="px-4 py-2 text-neutral-600">{r.note}</td>
+                  <td className="px-4 py-2 text-ink-900">{r.gradeLabel ?? "All grades"}</td>
+                  <td className="px-4 py-2 text-ink-600">{r.note}</td>
                   <td className="px-4 py-2">
                     <span
-                      className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                      className={`rounded-sm px-2 py-0.5 text-xs font-medium ${
                         r.status === "done"
-                          ? "bg-emerald-100 text-emerald-700"
+                          ? "bg-ok-bg text-ok"
                           : r.status === "acknowledged"
-                            ? "bg-blue-100 text-blue-700"
-                            : "bg-amber-100 text-amber-700"
+                            ? "bg-teal-100 text-teal-800"
+                            : "bg-warn-bg text-warn"
                       }`}
                     >
                       {r.status}
@@ -400,7 +400,7 @@ export default async function SchoolDetailPage({ params }: { params: Promise<{ i
                           type="submit"
                           name="status"
                           value="acknowledged"
-                          className="text-xs text-neutral-500 hover:text-neutral-900"
+                          className="text-xs text-ink-400 hover:text-ink-900"
                         >
                           Acknowledge
                         </button>
@@ -410,7 +410,7 @@ export default async function SchoolDetailPage({ params }: { params: Promise<{ i
                           type="submit"
                           name="status"
                           value="done"
-                          className="text-xs text-neutral-500 hover:text-neutral-900"
+                          className="text-xs text-ink-400 hover:text-ink-900"
                         >
                           Mark done
                         </button>
@@ -421,7 +421,7 @@ export default async function SchoolDetailPage({ params }: { params: Promise<{ i
               ))}
               {updateRequests.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="px-4 py-4 text-center text-sm text-neutral-400">
+                  <td colSpan={4} className="px-4 py-4 text-center text-sm text-ink-400">
                     No requests yet.
                   </td>
                 </tr>

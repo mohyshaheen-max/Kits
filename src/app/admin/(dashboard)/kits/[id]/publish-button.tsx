@@ -13,13 +13,13 @@ export default function PublishButton({ kitId }: { kitId: number }) {
         <button
           type="submit"
           disabled={pending}
-          className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+          className="cut-tr rounded-md bg-teal-600 px-4 py-2 text-sm font-medium text-white hover:bg-teal-700 disabled:opacity-50"
         >
           {pending ? "Publishing..." : "Publish"}
         </button>
       </form>
       {state?.errors && state.errors.length > 0 && (
-        <div className="mt-2 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+        <div className="mt-2 rounded-md border border-error bg-error-bg p-3 text-sm text-error">
           <p className="font-medium">Can&apos;t publish yet:</p>
           <ul className="mt-1 list-inside list-disc space-y-0.5">
             {state.errors.map((e, i) => (
@@ -29,7 +29,7 @@ export default function PublishButton({ kitId }: { kitId: number }) {
         </div>
       )}
       {state?.errors && state.errors.length === 0 && (
-        <p className="mt-2 text-sm font-medium text-emerald-700">Published.</p>
+        <p className="mt-2 text-sm font-medium text-ok">Published.</p>
       )}
     </div>
   );

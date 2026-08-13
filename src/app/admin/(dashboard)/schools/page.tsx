@@ -24,20 +24,20 @@ export default async function SchoolsPage() {
     <div>
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-neutral-900">Schools</h1>
-          <p className="mt-1 text-sm text-neutral-500">{allSchools.length} schools</p>
+          <h1 className="text-xl font-semibold text-ink-900">Schools</h1>
+          <p className="mt-1 text-sm text-ink-400">{allSchools.length} schools</p>
         </div>
         <Link
           href="/admin/schools/new"
-          className="rounded-md bg-neutral-900 px-3 py-2 text-sm font-medium text-white hover:bg-neutral-800"
+          className="rounded-md bg-teal-600 px-3 py-2 text-sm font-medium text-white hover:bg-teal-700"
         >
           New school
         </Link>
       </div>
 
-      <div className="mt-6 overflow-hidden rounded-lg border border-neutral-200 bg-white">
+      <div className="mt-6 overflow-hidden rounded-md border border-line bg-surface">
         <table className="w-full text-left text-sm">
-          <thead className="bg-neutral-50 text-xs uppercase tracking-wide text-neutral-500">
+          <thead className="bg-canvas text-xs uppercase tracking-wide text-ink-400">
             <tr>
               <th className="px-4 py-3 font-medium">Name</th>
               <th className="px-4 py-3 font-medium">Tier</th>
@@ -48,24 +48,24 @@ export default async function SchoolsPage() {
               <th className="px-4 py-3 font-medium">Status</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-neutral-100">
+          <tbody className="divide-y divide-line-2">
             {allSchools.map((s) => (
-              <tr key={s.id} className="hover:bg-neutral-50">
+              <tr key={s.id} className="hover:bg-teal-050">
                 <td className="px-4 py-3">
-                  <Link href={`/admin/schools/${s.id}`} className="font-medium text-neutral-900 hover:underline">
+                  <Link href={`/admin/schools/${s.id}`} className="font-medium text-ink-900 hover:underline">
                     {s.name}
                   </Link>
-                  <p className="text-xs text-neutral-400">/s/{s.referralSlug}</p>
+                  <p className="text-xs text-ink-400">/s/{s.referralSlug}</p>
                 </td>
-                <td className="px-4 py-3 text-neutral-600">{s.tier}</td>
-                <td className="px-4 py-3 text-neutral-600">{s.district ?? "—"}</td>
-                <td className="px-4 py-3 text-neutral-600">{gradeMap[s.id] ?? 0}</td>
-                <td className="px-4 py-3 text-neutral-600">{listMap[s.id] ?? 0}</td>
-                <td className="px-4 py-3 text-neutral-600">{kitMap[s.id] ?? 0}</td>
+                <td className="px-4 py-3 text-ink-600">{s.tier}</td>
+                <td className="px-4 py-3 text-ink-600">{s.district ?? "—"}</td>
+                <td className="px-4 py-3 font-mono text-ink-600">{gradeMap[s.id] ?? 0}</td>
+                <td className="px-4 py-3 font-mono text-ink-600">{listMap[s.id] ?? 0}</td>
+                <td className="px-4 py-3 font-mono text-ink-600">{kitMap[s.id] ?? 0}</td>
                 <td className="px-4 py-3">
                   <span
-                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                      s.status === "active" ? "bg-emerald-100 text-emerald-700" : "bg-neutral-100 text-neutral-500"
+                    className={`rounded-sm px-2 py-0.5 text-xs font-medium ${
+                      s.status === "active" ? "bg-ok-bg text-ok" : "bg-canvas text-ink-400"
                     }`}
                   >
                     {s.status}

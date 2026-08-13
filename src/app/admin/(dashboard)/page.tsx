@@ -25,35 +25,35 @@ export default async function AdminOverviewPage() {
 
   return (
     <div>
-      <h1 className="text-xl font-semibold text-neutral-900">Overview</h1>
-      <p className="mt-1 text-sm text-neutral-500">Where things stand across schools, catalogue and kits.</p>
+      <h1 className="text-xl font-semibold text-ink-900">Overview</h1>
+      <p className="mt-1 text-sm text-ink-400">Where things stand across schools, catalogue and kits.</p>
 
       <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
         {cards.map((c) => (
           <Link
             key={c.label}
             href={c.href}
-            className="rounded-lg border border-neutral-200 bg-white p-4 hover:border-neutral-300"
+            className="rounded-md border border-line bg-surface p-4 hover:border-line"
           >
-            <p className="text-2xl font-semibold text-neutral-900">{c.value}</p>
-            <p className="mt-1 text-xs text-neutral-500">{c.label}</p>
+            <p className="text-2xl font-semibold text-ink-900">{c.value}</p>
+            <p className="mt-1 text-xs text-ink-400">{c.label}</p>
           </Link>
         ))}
       </div>
 
       <div className="mt-8">
-        <h2 className="text-sm font-semibold text-neutral-900">Kits by status</h2>
+        <h2 className="text-sm font-semibold text-ink-900">Kits by status</h2>
         <div className="mt-3 flex flex-wrap gap-3">
           {(["draft", "review", "live", "archived"] as const).map((status) => (
-            <div key={status} className="rounded-md border border-neutral-200 bg-white px-4 py-3">
-              <p className="text-lg font-semibold text-neutral-900">{kitCounts[status] ?? 0}</p>
-              <p className="text-xs capitalize text-neutral-500">{status}</p>
+            <div key={status} className="rounded-md border border-line bg-surface px-4 py-3">
+              <p className="text-lg font-semibold text-ink-900">{kitCounts[status] ?? 0}</p>
+              <p className="text-xs capitalize text-ink-400">{status}</p>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="mt-8 rounded-lg border border-dashed border-neutral-300 bg-white p-4 text-sm text-neutral-500">
+      <div className="mt-8 rounded-md border border-dashed border-line bg-surface p-4 text-sm text-ink-400">
         Start by creating a school, entering its list, then generating a kit from it in the Kit Builder.
       </div>
     </div>

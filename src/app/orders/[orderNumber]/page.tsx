@@ -53,7 +53,7 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
           </div>
         )}
 
-        <h1 className="mt-6 font-display text-2xl font-semibold text-ink-900">{order.orderNumber}</h1>
+        <h1 className="mt-6 font-mono text-2xl font-semibold text-ink-900">{order.orderNumber}</h1>
         <p className="mt-1 text-sm text-teal-700">{school ? `${school.name} — ${grade?.label}` : "General Store"}</p>
 
         <div className="mt-6 overflow-hidden rounded-md border border-line bg-surface">

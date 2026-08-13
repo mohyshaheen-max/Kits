@@ -13,7 +13,7 @@ export default async function PortalDashboardPage() {
 
   const [school] = await db.select().from(schools).where(eq(schools.id, schoolAdmin.schoolId)).limit(1);
   if (!school) {
-    return <p className="text-sm text-neutral-500">Your school could not be found — contact KITS support.</p>;
+    return <p className="text-sm text-ink-400">Your school could not be found — contact KITS support.</p>;
   }
 
   const [liveKits, [commission]] = await Promise.all([
@@ -48,19 +48,19 @@ export default async function PortalDashboardPage() {
   return (
     <div className="max-w-3xl space-y-10">
       <div>
-        <h1 className="text-xl font-semibold text-neutral-900">{school.name}</h1>
-        <p className="mt-1 text-sm text-neutral-500">Referral tools, orders and commission for your school.</p>
+        <h1 className="text-xl font-semibold text-ink-900">{school.name}</h1>
+        <p className="mt-1 text-sm text-ink-400">Referral tools, orders and commission for your school.</p>
       </div>
 
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="rounded-xl border border-neutral-200 bg-white p-5 shadow-sm">
-          <p className="text-xs font-medium uppercase tracking-wide text-neutral-500">Orders via your link</p>
-          <p className="mt-2 text-2xl font-semibold text-neutral-900">{commission.orderCount}</p>
+        <div className="rounded-md border border-line bg-surface p-5">
+          <p className="text-xs font-medium uppercase tracking-wide text-ink-400">Orders via your link</p>
+          <p className="mt-2 font-mono text-2xl font-semibold text-ink-900">{commission.orderCount}</p>
         </div>
-        <div className="rounded-xl border border-indigo-200 bg-indigo-50 p-5 shadow-sm">
-          <p className="text-xs font-medium uppercase tracking-wide text-indigo-600">Commission earned</p>
-          <p className="mt-2 text-2xl font-semibold text-indigo-700">{commissionEarned.toFixed(2)} EGP</p>
-          <p className="mt-1 text-xs text-indigo-500">
+        <div className="rounded-md border border-teal-200 bg-teal-050 p-5">
+          <p className="text-xs font-medium uppercase tracking-wide text-teal-700">Commission earned</p>
+          <p className="mt-2 font-mono text-2xl font-semibold text-teal-700">{commissionEarned.toFixed(2)} EGP</p>
+          <p className="mt-1 text-xs text-teal-700">
             {(school.commissionRate * 100).toFixed(1)}% of order subtotal
             {school.commissionActiveUntil ? ` · active until ${school.commissionActiveUntil}` : ""}
           </p>
@@ -68,19 +68,19 @@ export default async function PortalDashboardPage() {
       </section>
 
       <section>
-        <h2 className="text-sm font-semibold text-neutral-900">Your referral link</h2>
-        <div className="mt-3 flex flex-col gap-4 rounded-xl border border-neutral-200 bg-white p-5 shadow-sm sm:flex-row sm:items-center">
+        <h2 className="text-sm font-semibold text-ink-900">Your referral link</h2>
+        <div className="mt-3 flex flex-col gap-4 rounded-md border border-line bg-surface p-5 sm:flex-row sm:items-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={qrSrc}
             alt="Referral QR code"
             width={140}
             height={140}
-            className="rounded-lg border border-neutral-200"
+            className="rounded-md border border-line"
           />
           <div className="min-w-0">
-            <p className="break-all rounded-md bg-neutral-50 px-3 py-2 text-sm text-neutral-700">{referralUrl}</p>
-            <p className="mt-2 text-xs text-neutral-500">
+            <p className="break-all rounded-sm bg-canvas px-3 py-2 font-mono text-sm text-ink-600">{referralUrl}</p>
+            <p className="mt-2 text-xs text-ink-400">
               Share this link or the QR code with parents. Orders placed through it are tracked automatically for
               your commission.
             </p>
@@ -89,23 +89,23 @@ export default async function PortalDashboardPage() {
       </section>
 
       <section>
-        <h2 className="text-sm font-semibold text-neutral-900">Live kits</h2>
-        <div className="mt-3 overflow-hidden rounded-lg border border-neutral-200 bg-white">
+        <h2 className="text-sm font-semibold text-ink-900">Live kits</h2>
+        <div className="mt-3 overflow-hidden rounded-md border border-line bg-surface">
           <table className="w-full text-left text-sm">
-            <thead className="bg-neutral-50 text-xs uppercase tracking-wide text-neutral-500">
+            <thead className="bg-canvas text-xs uppercase tracking-wide text-ink-400">
               <tr>
                 <th className="px-4 py-2 font-medium">Grade</th>
                 <th className="px-4 py-2 font-medium"></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-neutral-100">
+            <tbody className="divide-y divide-line-2">
               {liveKits.map((k) => (
                 <tr key={k.kitId}>
-                  <td className="px-4 py-2 font-medium text-neutral-900">{k.gradeLabel}</td>
+                  <td className="px-4 py-2 font-medium text-ink-900">{k.gradeLabel}</td>
                   <td className="px-4 py-2 text-right">
                     <Link
                       href={`/s/${school.referralSlug}/${k.gradeId}`}
-                      className="text-xs text-neutral-500 hover:underline"
+                      className="text-xs text-ink-400 hover:underline"
                     >
                       View
                     </Link>
@@ -114,7 +114,7 @@ export default async function PortalDashboardPage() {
               ))}
               {liveKits.length === 0 && (
                 <tr>
-                  <td colSpan={2} className="px-4 py-4 text-center text-sm text-neutral-400">
+                  <td colSpan={2} className="px-4 py-4 text-center text-sm text-ink-400">
                     No kits published yet.
                   </td>
                 </tr>

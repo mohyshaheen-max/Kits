@@ -4,9 +4,9 @@ import { getDb } from "@/db";
 import { returns, orders } from "@/db/schema";
 
 const STATUS_STYLE: Record<string, string> = {
-  requested: "bg-amber-100 text-amber-700",
-  approved: "bg-emerald-100 text-emerald-700",
-  declined: "bg-red-100 text-red-700",
+  requested: "bg-warn-bg text-warn",
+  approved: "bg-ok-bg text-ok",
+  declined: "bg-error-bg text-error",
 };
 
 export default async function AdminReturnsPage() {
@@ -28,19 +28,19 @@ export default async function AdminReturnsPage() {
 
   return (
     <div>
-      <h1 className="text-xl font-semibold text-neutral-900">Returns</h1>
-      <p className="mt-1 text-sm text-neutral-500">
+      <h1 className="text-xl font-semibold text-ink-900">Returns</h1>
+      <p className="mt-1 text-sm text-ink-400">
         {rows.length} request{rows.length === 1 ? "" : "s"}
         {pending > 0 && (
-          <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
+          <span className="ml-2 rounded-sm bg-warn-bg px-2 py-0.5 text-xs font-medium text-warn">
             {pending} awaiting decision
           </span>
         )}
       </p>
 
-      <div className="mt-6 overflow-hidden rounded-lg border border-neutral-200 bg-white">
+      <div className="mt-6 overflow-hidden rounded-md border border-line bg-surface">
         <table className="w-full text-left text-sm">
-          <thead className="bg-neutral-50 text-xs uppercase tracking-wide text-neutral-500">
+          <thead className="bg-canvas text-xs uppercase tracking-wide text-ink-400">
             <tr>
               <th className="px-4 py-2 font-medium">Order</th>
               <th className="px-4 py-2 font-medium">Child</th>
@@ -48,19 +48,19 @@ export default async function AdminReturnsPage() {
               <th className="px-4 py-2 font-medium">Status</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-neutral-100">
+          <tbody className="divide-y divide-line-2">
             {rows.map((r) => (
-              <tr key={r.id} className="hover:bg-neutral-50">
+              <tr key={r.id} className="hover:bg-teal-050">
                 <td className="px-4 py-3">
-                  <Link href={`/admin/returns/${r.id}`} className="font-medium text-neutral-900 hover:underline">
+                  <Link href={`/admin/returns/${r.id}`} className="font-mono font-medium text-ink-900 hover:underline">
                     {r.orderNumber}
                   </Link>
-                  <p className="text-xs text-neutral-400">{new Date(r.createdAt).toLocaleString()}</p>
+                  <p className="text-xs text-ink-400">{new Date(r.createdAt).toLocaleString()}</p>
                 </td>
-                <td className="px-4 py-3 text-neutral-600">{r.childName}</td>
-                <td className="px-4 py-3 text-neutral-600">{r.reason}</td>
+                <td className="px-4 py-3 text-ink-600">{r.childName}</td>
+                <td className="px-4 py-3 text-ink-600">{r.reason}</td>
                 <td className="px-4 py-3">
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_STYLE[r.status]}`}>
+                  <span className={`rounded-sm px-2 py-0.5 text-xs font-medium ${STATUS_STYLE[r.status]}`}>
                     {r.status}
                   </span>
                 </td>
@@ -68,7 +68,7 @@ export default async function AdminReturnsPage() {
             ))}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={4} className="px-4 py-6 text-center text-sm text-neutral-400">
+                <td colSpan={4} className="px-4 py-6 text-center text-sm text-ink-400">
                   No return requests yet.
                 </td>
               </tr>

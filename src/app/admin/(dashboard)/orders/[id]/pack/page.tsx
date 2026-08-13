@@ -42,62 +42,63 @@ export default async function PackOrderPage({ params }: { params: Promise<{ id: 
   return (
     <div className="max-w-3xl space-y-6">
       <div>
-        <Link href={`/admin/orders/${order.id}`} className="text-xs text-neutral-400 hover:text-neutral-700">
-          ← {order.orderNumber}
+        <Link href={`/admin/orders/${order.id}`} className="text-xs text-ink-400 hover:text-ink-600">
+          ← <span className="font-mono">{order.orderNumber}</span>
         </Link>
-        <h1 className="mt-1 text-xl font-semibold text-neutral-900">Pick &amp; pack</h1>
-        <p className="text-sm text-neutral-500">
-          {school ? `${school.name} — ${grade?.label}` : "General Store"} · {order.childName} ({order.childClass})
+        <h1 className="mt-1 text-xl font-semibold text-ink-900">Pick &amp; pack</h1>
+        <p className="text-sm text-ink-400">
+          {school ? `${school.name} — ${grade?.label}` : "General Store"} · {order.childName} ({order.childClass}) ·{" "}
+          <span className="font-mono">{lines.length} items</span>
         </p>
       </div>
 
       <form action={confirmPickAction} className="space-y-4">
         <input type="hidden" name="order_id" value={order.id} />
 
-        <div className="overflow-hidden rounded-lg border border-neutral-200 bg-white">
+        <div className="overflow-hidden rounded-md border border-line bg-surface">
           <table className="w-full text-left text-sm">
-            <thead className="bg-neutral-50 text-xs uppercase tracking-wide text-neutral-500">
+            <thead className="bg-canvas text-xs uppercase tracking-wide text-ink-400">
               <tr>
-                <th className="px-4 py-2 font-medium">SKU</th>
-                <th className="px-4 py-2 font-medium">Ordered</th>
-                <th className="px-4 py-2 font-medium">Available</th>
-                <th className="px-4 py-2 font-medium">Picked qty</th>
-                <th className="px-4 py-2 font-medium">If short: substitute</th>
+                <th className="px-4 py-3 font-medium">SKU</th>
+                <th className="px-4 py-3 text-right font-medium">Ordered</th>
+                <th className="px-4 py-3 text-right font-medium">Available</th>
+                <th className="px-4 py-3 font-medium">Picked qty</th>
+                <th className="px-4 py-3 font-medium">If short: substitute</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-neutral-100">
+            <tbody className="divide-y divide-line-2">
               {lines.map(({ item, sku }) => {
                 const avail = availability.get(sku.id)?.available ?? 0;
                 const short = avail < item.qty;
                 const substitutes = substitutesByLine.get(item.id) ?? [];
                 return (
-                  <tr key={item.id} className={short ? "bg-amber-50/50" : undefined}>
-                    <td className="px-4 py-2">
-                      <p className="font-medium text-neutral-900">{sku.name}</p>
-                      <p className="text-xs text-neutral-400">{sku.code}</p>
+                  <tr key={item.id} className={short ? "bg-warn-bg/50" : undefined}>
+                    <td className="px-4 py-3">
+                      <p className="font-medium text-ink-900">{sku.name}</p>
+                      <p className="font-mono text-xs text-ink-400">{sku.code}</p>
                     </td>
-                    <td className="px-4 py-2 text-neutral-600">{item.qty}</td>
-                    <td className="px-4 py-2">
-                      <span className={short ? "font-medium text-amber-700" : "text-neutral-600"}>{avail}</span>
+                    <td className="px-4 py-3 text-right font-mono text-ink-600">{item.qty}</td>
+                    <td className="px-4 py-3 text-right">
+                      <span className={`font-mono ${short ? "font-medium text-warn" : "text-ink-600"}`}>{avail}</span>
                     </td>
-                    <td className="px-4 py-2">
+                    <td className="px-4 py-3">
                       <input
                         type="number"
                         name={`picked_qty_${item.id}`}
                         min={0}
                         max={item.qty}
                         defaultValue={Math.max(0, Math.min(item.qty, avail))}
-                        className="w-16 rounded-md border border-neutral-300 px-2 py-1 text-sm"
+                        className="h-11 w-20 rounded-sm border border-line px-2 text-right font-mono text-sm focus:outline-2 focus:outline-offset-1 focus:outline-teal-500"
                       />
                     </td>
-                    <td className="px-4 py-2">
+                    <td className="px-4 py-3">
                       {short ? (
                         substitutes.length > 0 ? (
                           <div className="space-y-1">
                             <select
                               name={`substitute_sku_${item.id}`}
                               defaultValue=""
-                              className="w-full rounded-md border border-neutral-300 px-2 py-1 text-xs"
+                              className="h-11 w-full rounded-sm border border-line px-2 text-xs focus:outline-2 focus:outline-offset-1 focus:outline-teal-500"
                             >
                               <option value="">— no substitute —</option>
                               {substitutes.map((s) => (
@@ -110,14 +111,14 @@ export default async function PackOrderPage({ params }: { params: Promise<{ id: 
                               type="text"
                               name={`note_${item.id}`}
                               placeholder="Note (optional)"
-                              className="w-full rounded-md border border-neutral-300 px-2 py-1 text-xs"
+                              className="h-11 w-full rounded-sm border border-line px-2 text-xs focus:outline-2 focus:outline-offset-1 focus:outline-teal-500"
                             />
                           </div>
                         ) : (
-                          <p className="text-xs text-red-600">Short, no allowed substitute — flag for review</p>
+                          <p className="text-xs text-error">Short, no allowed substitute — flag for review</p>
                         )
                       ) : (
-                        <span className="text-xs text-neutral-300">—</span>
+                        <span className="text-xs text-ink-400">—</span>
                       )}
                     </td>
                   </tr>
@@ -129,7 +130,7 @@ export default async function PackOrderPage({ params }: { params: Promise<{ id: 
 
         <button
           type="submit"
-          className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
+          className="cut-tr h-14 rounded-md bg-teal-600 px-6 text-sm font-medium text-white hover:bg-teal-700"
         >
           Confirm pack
         </button>

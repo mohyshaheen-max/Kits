@@ -17,8 +17,8 @@ export default async function PortalRequestPage() {
 
   return (
     <div className="max-w-lg">
-      <h1 className="text-xl font-semibold text-neutral-900">Request a list update</h1>
-      <p className="mt-1 text-sm text-neutral-500">
+      <h1 className="text-xl font-semibold text-ink-900">Request a list update</h1>
+      <p className="mt-1 text-sm text-ink-400">
         Tell us what needs to change for next year — a new item, a quantity change, a brand switch. Your KITS contact
         will follow up before anything goes live.
       </p>

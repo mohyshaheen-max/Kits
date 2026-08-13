@@ -24,10 +24,15 @@ export default async function AdminTicketPage({ params }: { params: Promise<{ id
 
   return (
     <div className="max-w-2xl">
-      <h1 className="text-xl font-semibold text-neutral-900">{ticket.subject}</h1>
-      <p className="mt-1 text-sm text-neutral-500">
+      <h1 className="text-xl font-semibold text-ink-900">{ticket.subject}</h1>
+      <p className="mt-1 text-sm text-ink-400">
         {customer ? customer.name : ticket.guestName} · {customer ? customer.email : ticket.guestEmail}
-        {order && ` · Order ${order.orderNumber}`}
+        {order && (
+          <>
+            {" "}
+            · Order <span className="font-mono">{order.orderNumber}</span>
+          </>
+        )}
       </p>
 
       <form action={updateTicketStatusAction} className="mt-3 flex items-center gap-2">
@@ -38,8 +43,8 @@ export default async function AdminTicketPage({ params }: { params: Promise<{ id
             type="submit"
             name="status"
             value={s}
-            className={`rounded-full px-3 py-1 text-xs font-medium ${
-              ticket.status === s ? "bg-neutral-900 text-white" : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+            className={`rounded-sm px-3 py-1 text-xs font-medium ${
+              ticket.status === s ? "bg-teal-600 text-white" : "bg-canvas text-ink-600 hover:bg-teal-100"
             }`}
           >
             {s.replace("_", " ")}
@@ -51,19 +56,19 @@ export default async function AdminTicketPage({ params }: { params: Promise<{ id
         {messages.map((m) => (
           <div
             key={m.id}
-            className={`rounded-lg border p-3 text-sm ${
+            className={`rounded-md border p-3 text-sm ${
               m.isInternalNote
-                ? "border-amber-200 bg-amber-50"
+                ? "border-warn bg-warn-bg"
                 : m.author === "admin"
-                  ? "border-indigo-100 bg-indigo-50"
-                  : "border-neutral-200 bg-white"
+                  ? "border-teal-100 bg-teal-050"
+                  : "border-line bg-surface"
             }`}
           >
-            <p className="text-xs font-medium text-neutral-500">
+            <p className="text-xs font-medium text-ink-400">
               {m.authorName ?? (m.author === "admin" ? "Staff" : "Customer")} · {new Date(m.createdAt).toLocaleString()}
               {m.isInternalNote && " · internal note"}
             </p>
-            <p className="mt-1 whitespace-pre-wrap text-neutral-800">{m.body}</p>
+            <p className="mt-1 whitespace-pre-wrap text-ink-900">{m.body}</p>
           </div>
         ))}
       </div>

@@ -56,7 +56,7 @@ export default async function AccountOrdersPage() {
             {rows.map((o) => (
               <tr key={o.id} className="hover:bg-teal-050">
                 <td className="px-4 py-3">
-                  <Link href={`/orders/${o.orderNumber}`} className="font-medium text-teal-700 hover:underline">
+                  <Link href={`/orders/${o.orderNumber}`} className="font-mono font-medium text-teal-700 hover:underline">
                     {o.orderNumber}
                   </Link>
                   <p className="text-xs text-ink-400">{new Date(o.createdAt).toLocaleString()}</p>

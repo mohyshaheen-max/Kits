@@ -1,5 +1,5 @@
 export const inputClass =
-  "mt-1 w-full rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-neutral-500 focus:outline-none";
+  "mt-1 w-full rounded-sm border border-line px-3 py-2 text-sm focus:outline-2 focus:outline-offset-1 focus:outline-teal-500";
 
 export function Field({
   label,
@@ -14,11 +14,11 @@ export function Field({
 }) {
   return (
     <div>
-      <label htmlFor={htmlFor} className="block text-sm font-medium text-neutral-700">
+      <label htmlFor={htmlFor} className="block text-sm font-medium text-ink-600">
         {label}
       </label>
       {children}
-      {hint && <p className="mt-1 text-xs text-neutral-400">{hint}</p>}
+      {hint && <p className="mt-1 text-xs text-ink-400">{hint}</p>}
     </div>
   );
 }

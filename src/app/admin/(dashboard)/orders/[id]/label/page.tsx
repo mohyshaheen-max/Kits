@@ -36,8 +36,8 @@ export default async function OrderLabelPage({ params }: { params: Promise<{ id:
 
       <div className="no-print mb-4 flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-neutral-900">Labels — {order.orderNumber}</h1>
-          <p className="text-sm text-neutral-500">
+          <h1 className="text-xl font-semibold text-ink-900">Labels — <span className="font-mono">{order.orderNumber}</span></h1>
+          <p className="text-sm text-ink-400">
             {copies} label{copies === 1 ? "" : "s"} (one per item). Sized for a 62×40mm thermal roll — adjust in your
             printer dialog if yours differs.
           </p>
@@ -47,13 +47,13 @@ export default async function OrderLabelPage({ params }: { params: Promise<{ id:
 
       {Array.from({ length: copies }).map((_, i) => (
         <div key={i} className="label flex h-[151px] w-[234px] flex-col justify-center gap-1 p-4">
-          <p className="text-xs uppercase tracking-wide text-neutral-400">KITS</p>
-          <p className="text-lg font-semibold leading-tight text-neutral-900">{order.childName}</p>
-          <p className="text-sm text-neutral-700">{order.childClass}</p>
-          <p className="text-xs text-neutral-500">{school?.name ?? "General Store"}</p>
-          <p className="text-xs text-neutral-400">
+          <p className="text-xs uppercase tracking-wide text-ink-400">KITS</p>
+          <p className="text-lg font-semibold leading-tight text-ink-900">{order.childName}</p>
+          <p className="text-sm text-ink-600">{order.childClass}</p>
+          <p className="text-xs text-ink-400">{school?.name ?? "General Store"}</p>
+          <p className="text-xs text-ink-400">
             {grade ? `${grade.label} · ` : ""}
-            {order.orderNumber}
+            <span className="font-mono">{order.orderNumber}</span>
           </p>
         </div>
       ))}

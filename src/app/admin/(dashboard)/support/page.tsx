@@ -4,10 +4,10 @@ import { getDb } from "@/db";
 import { supportTickets, customers, orders } from "@/db/schema";
 
 const STATUS_STYLE: Record<string, string> = {
-  open: "bg-amber-100 text-amber-700",
-  in_progress: "bg-blue-100 text-blue-700",
-  resolved: "bg-emerald-100 text-emerald-700",
-  closed: "bg-neutral-100 text-neutral-500",
+  open: "bg-warn-bg text-warn",
+  in_progress: "bg-teal-100 text-teal-800",
+  resolved: "bg-ok-bg text-ok",
+  closed: "bg-canvas text-ink-400",
 };
 
 export default async function AdminSupportPage() {
@@ -31,19 +31,19 @@ export default async function AdminSupportPage() {
 
   return (
     <div>
-      <h1 className="text-xl font-semibold text-neutral-900">Support</h1>
-      <p className="mt-1 text-sm text-neutral-500">
+      <h1 className="text-xl font-semibold text-ink-900">Support</h1>
+      <p className="mt-1 text-sm text-ink-400">
         {rows.length} ticket{rows.length === 1 ? "" : "s"}
         {open > 0 && (
-          <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
+          <span className="ml-2 rounded-sm bg-warn-bg px-2 py-0.5 text-xs font-medium text-warn">
             {open} open
           </span>
         )}
       </p>
 
-      <div className="mt-6 overflow-hidden rounded-lg border border-neutral-200 bg-white">
+      <div className="mt-6 overflow-hidden rounded-md border border-line bg-surface">
         <table className="w-full text-left text-sm">
-          <thead className="bg-neutral-50 text-xs uppercase tracking-wide text-neutral-500">
+          <thead className="bg-canvas text-xs uppercase tracking-wide text-ink-400">
             <tr>
               <th className="px-4 py-2 font-medium">Subject</th>
               <th className="px-4 py-2 font-medium">From</th>
@@ -52,19 +52,19 @@ export default async function AdminSupportPage() {
               <th className="px-4 py-2 font-medium">Status</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-neutral-100">
+          <tbody className="divide-y divide-line-2">
             {rows.map((t) => (
-              <tr key={t.id} className="hover:bg-neutral-50">
+              <tr key={t.id} className="hover:bg-teal-050">
                 <td className="px-4 py-3">
-                  <Link href={`/admin/support/${t.id}`} className="font-medium text-neutral-900 hover:underline">
+                  <Link href={`/admin/support/${t.id}`} className="font-medium text-ink-900 hover:underline">
                     {t.subject}
                   </Link>
                 </td>
-                <td className="px-4 py-3 text-neutral-600">{t.customerName ?? t.guestName ?? "—"}</td>
-                <td className="px-4 py-3 text-neutral-600">{t.orderNumber ?? "—"}</td>
-                <td className="px-4 py-3 text-neutral-500">{new Date(t.updatedAt).toLocaleString()}</td>
+                <td className="px-4 py-3 text-ink-600">{t.customerName ?? t.guestName ?? "—"}</td>
+                <td className="px-4 py-3 text-ink-600">{t.orderNumber ?? "—"}</td>
+                <td className="px-4 py-3 text-ink-400">{new Date(t.updatedAt).toLocaleString()}</td>
                 <td className="px-4 py-3">
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_STYLE[t.status]}`}>
+                  <span className={`rounded-sm px-2 py-0.5 text-xs font-medium ${STATUS_STYLE[t.status]}`}>
                     {t.status.replace("_", " ")}
                   </span>
                 </td>
@@ -72,7 +72,7 @@ export default async function AdminSupportPage() {
             ))}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-6 text-center text-sm text-neutral-400">
+                <td colSpan={5} className="px-4 py-6 text-center text-sm text-ink-400">
                   No support tickets yet.
                 </td>
               </tr>

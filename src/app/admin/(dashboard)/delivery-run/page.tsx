@@ -38,19 +38,19 @@ export default async function DeliveryRunPage() {
 
       <div className="no-print flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-neutral-900">Delivery run sheet</h1>
-          <p className="mt-1 text-sm text-neutral-500">Every packed order, grouped by school, ready to go out.</p>
+          <h1 className="text-xl font-semibold text-ink-900">Delivery run sheet</h1>
+          <p className="mt-1 text-sm text-ink-400">Every packed order, grouped by school, ready to go out.</p>
         </div>
         <PrintButton />
       </div>
 
       {Array.from(grouped.entries()).map(([schoolName, schoolRows]) => (
-        <div key={schoolName} className="overflow-hidden rounded-lg border border-neutral-200 bg-white">
-          <div className="border-b border-neutral-200 bg-neutral-50 px-4 py-2 text-sm font-semibold text-neutral-900">
+        <div key={schoolName} className="overflow-hidden rounded-md border border-line bg-surface">
+          <div className="border-b border-line bg-canvas px-4 py-2 text-sm font-semibold text-ink-900">
             {schoolName}
           </div>
           <table className="w-full text-left text-sm">
-            <thead className="text-xs uppercase tracking-wide text-neutral-400">
+            <thead className="text-xs uppercase tracking-wide text-ink-400">
               <tr>
                 <th className="px-4 py-2 font-medium">Order</th>
                 <th className="px-4 py-2 font-medium">Child</th>
@@ -58,17 +58,17 @@ export default async function DeliveryRunPage() {
                 <th className="px-4 py-2 font-medium">Contact</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-neutral-100">
+            <tbody className="divide-y divide-line-2">
               {schoolRows.map((r) => (
                 <tr key={r.id}>
-                  <td className="px-4 py-2 text-neutral-900">{r.orderNumber}</td>
-                  <td className="px-4 py-2 text-neutral-600">
+                  <td className="px-4 py-2 font-mono text-ink-900">{r.orderNumber}</td>
+                  <td className="px-4 py-2 text-ink-600">
                     {r.childName} · {r.gradeLabel} {r.childClass}
                   </td>
-                  <td className="px-4 py-2 text-neutral-600">
+                  <td className="px-4 py-2 text-ink-600">
                     {r.deliveryMethod === "SCHOOL_BATCH" ? "School batch" : `Home — ${r.deliveryAddress ?? ""}`}
                   </td>
-                  <td className="px-4 py-2 text-neutral-600">
+                  <td className="px-4 py-2 text-ink-600">
                     {r.parentName} · {r.parentPhone}
                   </td>
                 </tr>
@@ -79,7 +79,7 @@ export default async function DeliveryRunPage() {
       ))}
 
       {rows.length === 0 && (
-        <p className="rounded-lg border border-dashed border-neutral-300 bg-white p-6 text-center text-sm text-neutral-400">
+        <p className="rounded-md border border-dashed border-line bg-surface p-6 text-center text-sm text-ink-400">
           Nothing packed and ready for delivery yet.
         </p>
       )}

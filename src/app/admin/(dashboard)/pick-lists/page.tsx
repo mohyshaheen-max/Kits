@@ -65,16 +65,16 @@ export default async function PickListsPage({
   return (
     <div className="max-w-3xl space-y-6">
       <div>
-        <h1 className="text-xl font-semibold text-neutral-900">Batch pick list</h1>
-        <p className="mt-1 text-sm text-neutral-500">
+        <h1 className="text-xl font-semibold text-ink-900">Batch pick list</h1>
+        <p className="mt-1 text-sm text-ink-400">
           Total quantity still needed across every open order for one school + grade — pull it all at once before
           packing individual orders.
         </p>
       </div>
 
-      <form className="flex items-end gap-3 rounded-lg border border-neutral-200 bg-white p-4">
+      <form className="flex items-end gap-3 rounded-md border border-line bg-surface p-4">
         <div className="flex-1">
-          <label className="block text-xs text-neutral-500">School</label>
+          <label className="block text-xs text-ink-400">School</label>
           <select name="schoolId" defaultValue={schoolId ?? ""} className={inputClass}>
             <option value="">— select —</option>
             {allSchools.map((s) => (
@@ -85,7 +85,7 @@ export default async function PickListsPage({
           </select>
         </div>
         <div className="flex-1">
-          <label className="block text-xs text-neutral-500">Grade</label>
+          <label className="block text-xs text-ink-400">Grade</label>
           <select name="gradeId" defaultValue={gradeId ?? ""} className={inputClass}>
             <option value="">— select —</option>
             {schoolGrades.map((g) => (
@@ -95,55 +95,55 @@ export default async function PickListsPage({
             ))}
           </select>
         </div>
-        <button type="submit" className="h-[38px] rounded-md bg-neutral-900 px-4 text-sm font-medium text-white hover:bg-neutral-800">
+        <button type="submit" className="h-[38px] rounded-md bg-teal-600 px-4 text-sm font-medium text-white hover:bg-teal-700">
           View
         </button>
       </form>
 
       {schoolId && gradeId && (
         <>
-          <p className="text-sm text-neutral-500">
+          <p className="text-sm text-ink-400">
             {matchingOrders.length} open order{matchingOrders.length === 1 ? "" : "s"} (pending/picking):{" "}
             {matchingOrders.map((o) => (
-              <Link key={o.id} href={`/admin/orders/${o.id}`} className="mr-2 underline hover:text-neutral-900">
+              <Link key={o.id} href={`/admin/orders/${o.id}`} className="mr-2 font-mono underline hover:text-ink-900">
                 {o.orderNumber}
               </Link>
             ))}
           </p>
 
-          <div className="overflow-hidden rounded-lg border border-neutral-200 bg-white">
+          <div className="overflow-hidden rounded-md border border-line bg-surface">
             <table className="w-full text-left text-sm">
-              <thead className="bg-neutral-50 text-xs uppercase tracking-wide text-neutral-500">
+              <thead className="bg-canvas text-xs uppercase tracking-wide text-ink-400">
                 <tr>
                   <th className="px-4 py-2 font-medium">SKU</th>
                   <th className="px-4 py-2 font-medium">Category</th>
-                  <th className="px-4 py-2 font-medium">Needed</th>
-                  <th className="px-4 py-2 font-medium">On hand</th>
-                  <th className="px-4 py-2 font-medium">Orders</th>
+                  <th className="px-4 py-2 text-right font-medium">Needed</th>
+                  <th className="px-4 py-2 text-right font-medium">On hand</th>
+                  <th className="px-4 py-2 text-right font-medium">Orders</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-neutral-100">
+              <tbody className="divide-y divide-line-2">
                 {rows.map((r) => {
                   const avail = available.get(r.skuId);
                   const short = (avail?.onHand ?? 0) < r.needed;
                   return (
-                    <tr key={r.skuId} className={short ? "bg-amber-50/50" : undefined}>
+                    <tr key={r.skuId} className={short ? "bg-warn-bg/50" : undefined}>
                       <td className="px-4 py-2">
-                        <p className="font-medium text-neutral-900">{r.skuName}</p>
-                        <p className="text-xs text-neutral-400">{r.skuCode}</p>
+                        <p className="font-medium text-ink-900">{r.skuName}</p>
+                        <p className="font-mono text-xs text-ink-400">{r.skuCode}</p>
                       </td>
-                      <td className="px-4 py-2 text-neutral-600">{r.category}</td>
-                      <td className="px-4 py-2 font-medium text-neutral-900">{r.needed}</td>
-                      <td className={`px-4 py-2 ${short ? "font-medium text-amber-700" : "text-neutral-600"}`}>
+                      <td className="px-4 py-2 text-ink-600">{r.category}</td>
+                      <td className="px-4 py-2 text-right font-mono font-medium text-ink-900">{r.needed}</td>
+                      <td className={`px-4 py-2 text-right font-mono ${short ? "font-medium text-warn" : "text-ink-600"}`}>
                         {avail?.onHand ?? 0}
                       </td>
-                      <td className="px-4 py-2 text-neutral-500">{r.orderCount}</td>
+                      <td className="px-4 py-2 text-right font-mono text-ink-400">{r.orderCount}</td>
                     </tr>
                   );
                 })}
                 {rows.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="px-4 py-6 text-center text-sm text-neutral-400">
+                    <td colSpan={5} className="px-4 py-6 text-center text-sm text-ink-400">
                       Nothing to pick — no open orders for this school and grade.
                     </td>
                   </tr>

@@ -11,7 +11,7 @@ export default function SchoolDetailsForm({ school }: { school: School }) {
   const [state, formAction, pending] = useActionState(updateSchoolAction, undefined);
 
   return (
-    <form action={formAction} className="mt-3 space-y-4 rounded-lg border border-neutral-200 bg-white p-4">
+    <form action={formAction} className="mt-3 space-y-4 rounded-md border border-line bg-surface p-4">
       <input type="hidden" name="id" value={school.id} />
       <div className="grid grid-cols-2 gap-4">
         <Field label="Name" htmlFor="name">
@@ -57,12 +57,12 @@ export default function SchoolDetailsForm({ school }: { school: School }) {
         </Field>
       </div>
 
-      {state?.error && <p className="text-sm text-red-600">{state.error}</p>}
+      {state?.error && <p className="text-sm text-error">{state.error}</p>}
 
       <button
         type="submit"
         disabled={pending}
-        className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-50"
+        className="rounded-md bg-teal-600 px-4 py-2 text-sm font-medium text-white hover:bg-teal-700 disabled:opacity-50"
       >
         {pending ? "Saving..." : "Save details"}
       </button>
