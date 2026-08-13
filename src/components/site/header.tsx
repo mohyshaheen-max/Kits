@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-export default function SiteHeader() {
+export default function SiteHeader({ customerName }: { customerName?: string | null }) {
   return (
     <header className="sticky top-0 z-10 border-b border-neutral-200 bg-white/90 backdrop-blur">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
@@ -17,6 +17,15 @@ export default function SiteHeader() {
           <Link href="/store" className="hover:text-neutral-900">
             Store
           </Link>
+          {customerName ? (
+            <Link href="/account" className="hover:text-neutral-900">
+              {customerName.split(" ")[0]} · My account
+            </Link>
+          ) : (
+            <Link href="/account/login" className="hover:text-neutral-900">
+              Sign in
+            </Link>
+          )}
         </nav>
       </div>
     </header>

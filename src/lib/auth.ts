@@ -127,3 +127,35 @@ export async function verifySchoolSession(
   if (!schoolAdminId) return null;
   return { schoolAdminId };
 }
+
+// ---------------------------------------------------------------------------
+// Customer session — same scheme again, "customer." tag, own cookie name.
+// ---------------------------------------------------------------------------
+
+export const CUSTOMER_SESSION_COOKIE = "kits_customer_session";
+
+export async function signCustomerSession(customerId: number, secret: string): Promise<string> {
+  const expiry = Math.floor(Date.now() / 1000) + SESSION_TTL_SECONDS;
+  const payload = `customer.${customerId}.${expiry}`;
+  const key = await hmacKey(secret);
+  const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(payload));
+  return `${payload}.${toHex(sig)}`;
+}
+
+export async function verifyCustomerSession(
+  cookieValue: string,
+  secret: string
+): Promise<{ customerId: number } | null> {
+  const parts = cookieValue.split(".");
+  if (parts.length !== 4 || parts[0] !== "customer") return null;
+  const [, idStr, expiryStr, sigHex] = parts;
+  const payload = `customer.${idStr}.${expiryStr}`;
+  const key = await hmacKey(secret);
+  const valid = await crypto.subtle.verify("HMAC", key, fromHex(sigHex) as BufferSource, new TextEncoder().encode(payload));
+  if (!valid) return null;
+  const expiry = Number(expiryStr);
+  if (!expiry || expiry < Math.floor(Date.now() / 1000)) return null;
+  const customerId = Number(idStr);
+  if (!customerId) return null;
+  return { customerId };
+}

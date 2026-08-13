@@ -1,13 +1,17 @@
 import { asc, eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { skus } from "@/db/schema";
+import { getAccountContext } from "@/lib/customer-session";
 import StoreCart from "./store-cart";
 
 export const dynamic = "force-dynamic";
 
 export default async function StorePage() {
   const db = getDb();
-  const allSkus = await db.select().from(skus).where(eq(skus.active, true)).orderBy(asc(skus.category), asc(skus.name));
+  const [allSkus, account] = await Promise.all([
+    db.select().from(skus).where(eq(skus.active, true)).orderBy(asc(skus.category), asc(skus.name)),
+    getAccountContext(),
+  ]);
 
   const items = allSkus.map((s) => ({
     id: s.id,
@@ -17,5 +21,5 @@ export default async function StorePage() {
     unitPrice: s.unitPrice,
   }));
 
-  return <StoreCart items={items} />;
+  return <StoreCart items={items} account={account} />;
 }

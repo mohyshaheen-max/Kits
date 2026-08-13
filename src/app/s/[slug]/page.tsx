@@ -3,6 +3,7 @@ import Link from "next/link";
 import { and, asc, eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { schools, grades, kits } from "@/db/schema";
+import { getCurrentCustomer } from "@/lib/customer-session";
 import SiteHeader from "@/components/site/header";
 import SiteFooter from "@/components/site/footer";
 
@@ -12,6 +13,8 @@ export default async function SchoolLandingPage({ params }: { params: Promise<{ 
   const db = getDb();
   const [school] = await db.select().from(schools).where(eq(schools.referralSlug, slug)).limit(1);
   if (!school || school.status !== "active") notFound();
+
+  const customer = await getCurrentCustomer();
 
   const liveKits = await db
     .select({
@@ -29,7 +32,7 @@ export default async function SchoolLandingPage({ params }: { params: Promise<{ 
 
   return (
     <div className="min-h-screen bg-neutral-50">
-      <SiteHeader />
+      <SiteHeader customerName={customer?.name} />
 
       <div className="mx-auto max-w-2xl px-6 py-16">
         <p className="text-sm font-medium text-indigo-600">{school.name}</p>

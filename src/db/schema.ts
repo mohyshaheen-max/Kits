@@ -250,6 +250,9 @@ export const orders = sqliteTable("orders", {
   gradeId: integer("grade_id").references(() => grades.id),
   kitId: integer("kit_id").references(() => kits.id),
   kitVersion: integer("kit_version"),
+  // Set server-side from the session at checkout, never from client input —
+  // null means a guest order (no self-service cancel/return for those).
+  customerId: integer("customer_id").references(() => customers.id),
   parentName: text("parent_name").notNull(),
   parentPhone: text("parent_phone").notNull(),
   parentEmail: text("parent_email"),
@@ -315,6 +318,7 @@ export const ordersRelations = relations(orders, ({ one, many }) => ({
   school: one(schools, { fields: [orders.schoolId], references: [schools.id] }),
   grade: one(grades, { fields: [orders.gradeId], references: [grades.id] }),
   kit: one(kits, { fields: [orders.kitId], references: [kits.id] }),
+  customer: one(customers, { fields: [orders.customerId], references: [customers.id] }),
   items: many(orderItems),
   payments: many(payments),
 }));
@@ -413,4 +417,65 @@ export const listUpdateRequests = sqliteTable("list_update_requests", {
 export const listUpdateRequestsRelations = relations(listUpdateRequests, ({ one }) => ({
   school: one(schools, { fields: [listUpdateRequests.schoolId], references: [schools.id] }),
   grade: one(grades, { fields: [listUpdateRequests.gradeId], references: [grades.id] }),
+}));
+
+// ---------------------------------------------------------------------------
+// Customer accounts — optional at checkout (guest checkout still works).
+// Logging in saves children/addresses for reuse and unlocks order history,
+// self-service cancellation, and returns. Orders always snapshot
+// parent/child name/class as text regardless of account state — an account
+// is a convenience layer on top of that, not a dependency of it.
+// ---------------------------------------------------------------------------
+
+export const customers = sqliteTable(
+  "customers",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    email: text("email").notNull(),
+    passwordHash: text("password_hash").notNull(),
+    name: text("name").notNull(),
+    phone: text("phone"),
+    createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  },
+  (t) => [uniqueIndex("customers_email_idx").on(t.email)]
+);
+
+export const children = sqliteTable("children", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  customerId: integer("customer_id")
+    .notNull()
+    .references(() => customers.id),
+  fullName: text("full_name").notNull(),
+  schoolId: integer("school_id").references(() => schools.id),
+  gradeId: integer("grade_id").references(() => grades.id),
+  classSection: text("class_section"),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const addresses = sqliteTable("addresses", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  customerId: integer("customer_id")
+    .notNull()
+    .references(() => customers.id),
+  label: text("label"),
+  line: text("line").notNull(),
+  phone: text("phone"),
+  isDefault: integer("is_default", { mode: "boolean" }).notNull().default(false),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const customersRelations = relations(customers, ({ many }) => ({
+  children: many(children),
+  addresses: many(addresses),
+  orders: many(orders),
+}));
+
+export const childrenRelations = relations(children, ({ one }) => ({
+  customer: one(customers, { fields: [children.customerId], references: [customers.id] }),
+  school: one(schools, { fields: [children.schoolId], references: [schools.id] }),
+  grade: one(grades, { fields: [children.gradeId], references: [grades.id] }),
+}));
+
+export const addressesRelations = relations(addresses, ({ one }) => ({
+  customer: one(customers, { fields: [addresses.customerId], references: [customers.id] }),
 }));

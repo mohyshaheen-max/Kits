@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { and, asc, desc, eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { schools, grades, kits, kitItems, skus } from "@/db/schema";
+import { getAccountContext } from "@/lib/customer-session";
 import Configurator from "./configurator";
 
 export default async function KitConfiguratorPage({
@@ -28,12 +29,15 @@ export default async function KitConfiguratorPage({
     .limit(1);
   if (!kit) notFound();
 
-  const rows = await db
-    .select({ item: kitItems, sku: skus })
-    .from(kitItems)
-    .innerJoin(skus, eq(kitItems.skuId, skus.id))
-    .where(eq(kitItems.kitId, kit.id))
-    .orderBy(asc(kitItems.sortOrder), asc(kitItems.id));
+  const [rows, account] = await Promise.all([
+    db
+      .select({ item: kitItems, sku: skus })
+      .from(kitItems)
+      .innerJoin(skus, eq(kitItems.skuId, skus.id))
+      .where(eq(kitItems.kitId, kit.id))
+      .orderBy(asc(kitItems.sortOrder), asc(kitItems.id)),
+    getAccountContext(),
+  ]);
 
   const items = rows
     .filter(({ item }) => item.qty !== null)
@@ -57,6 +61,7 @@ export default async function KitConfiguratorPage({
       kitName={kit.name}
       labelingAvailable={kit.labelingAvailable}
       items={items}
+      account={account}
     />
   );
 }

@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { orders, orderItems, skus, schools, grades } from "@/db/schema";
 import { categoryIcon } from "@/lib/category-icon";
+import { getCurrentCustomer } from "@/lib/customer-session";
 import SiteHeader from "@/components/site/header";
 import SiteFooter from "@/components/site/footer";
 
@@ -15,7 +16,7 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
   const [order] = await db.select().from(orders).where(eq(orders.orderNumber, orderNumber)).limit(1);
   if (!order) notFound();
 
-  const [school, grade, items] = await Promise.all([
+  const [school, grade, items, customer] = await Promise.all([
     order.schoolId ? db.select().from(schools).where(eq(schools.id, order.schoolId)).then((r) => r[0]) : undefined,
     order.gradeId ? db.select().from(grades).where(eq(grades.id, order.gradeId)).then((r) => r[0]) : undefined,
     db
@@ -23,11 +24,12 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
       .from(orderItems)
       .innerJoin(skus, eq(orderItems.skuId, skus.id))
       .where(eq(orderItems.orderId, order.id)),
+    getCurrentCustomer(),
   ]);
 
   return (
     <div className="min-h-screen bg-neutral-50">
-      <SiteHeader />
+      <SiteHeader customerName={customer?.name} />
       <div className="mx-auto max-w-xl px-6 py-16">
         <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800 shadow-sm">
           ✅ Order confirmed. We&apos;ll be in touch about delivery.

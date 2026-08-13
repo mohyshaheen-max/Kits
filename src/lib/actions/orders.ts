@@ -9,6 +9,7 @@ import { LABELING_FEE, DELIVERY_FEE, type DeliveryMethod } from "@/lib/pricing";
 import { generateOrderNumber } from "@/lib/orders";
 import { paymentProvider } from "@/lib/payments/provider";
 import { requireAdmin } from "@/lib/session";
+import { getCurrentCustomer } from "@/lib/customer-session";
 import { chunk } from "@/lib/chunk";
 import { applyStockMovement, checkStockShortages, reserveStock } from "@/lib/wms/stock";
 
@@ -39,6 +40,7 @@ export async function createOrderAction(_prev: CheckoutState | undefined, formDa
   if (paymentMethod !== "CARD" && paymentMethod !== "COD") return { error: "Choose a payment method." };
 
   const db: Db = getDb();
+  const customer = await getCurrentCustomer();
 
   const [kit] = await db.select().from(kits).where(and(eq(kits.id, kitId), eq(kits.status, "live"))).limit(1);
   if (!kit) return { error: "This kit is no longer available. Please refresh and try again." };
@@ -84,6 +86,7 @@ export async function createOrderAction(_prev: CheckoutState | undefined, formDa
       gradeId: kit.gradeId,
       kitId: kit.id,
       kitVersion: kit.version,
+      customerId: customer?.id ?? null,
       parentName,
       parentPhone,
       parentEmail,
@@ -159,6 +162,7 @@ export async function createGeneralOrderAction(
   if (paymentMethod !== "CARD" && paymentMethod !== "COD") return { error: "Choose a payment method." };
 
   const db: Db = getDb();
+  const customer = await getCurrentCustomer();
 
   const skuRows = await db
     .select()
@@ -202,6 +206,7 @@ export async function createGeneralOrderAction(
     .values({
       orderNumber,
       mode: "GENERAL_STORE",
+      customerId: customer?.id ?? null,
       parentName,
       parentPhone,
       parentEmail,

@@ -19,6 +19,14 @@ type Item = {
   isOptional: boolean;
 };
 
+type Account = {
+  name: string;
+  phone: string | null;
+  email: string | null;
+  children: { id: number; fullName: string; classSection: string | null }[];
+  addresses: { id: number; label: string | null; line: string }[];
+} | null;
+
 export default function Configurator({
   kitId,
   schoolName,
@@ -26,6 +34,7 @@ export default function Configurator({
   kitName,
   labelingAvailable,
   items,
+  account,
 }: {
   kitId: number;
   schoolName: string;
@@ -33,6 +42,7 @@ export default function Configurator({
   kitName: string;
   labelingAvailable: boolean;
   items: Item[];
+  account: Account;
 }) {
   const [step, setStep] = useState<"configure" | "review">("configure");
   const [included, setIncluded] = useState<Record<number, boolean>>(() =>
@@ -40,15 +50,32 @@ export default function Configurator({
   );
   const [labeling, setLabeling] = useState(false);
   const [delivery, setDelivery] = useState<DeliveryMethod>("SCHOOL_BATCH");
+  const [savedChildId, setSavedChildId] = useState<string>("");
   const [childName, setChildName] = useState("");
   const [childClass, setChildClass] = useState("");
   const [touched, setTouched] = useState(false);
 
-  const [parentName, setParentName] = useState("");
-  const [parentPhone, setParentPhone] = useState("");
-  const [parentEmail, setParentEmail] = useState("");
+  const [parentName, setParentName] = useState(account?.name ?? "");
+  const [parentPhone, setParentPhone] = useState(account?.phone ?? "");
+  const [parentEmail, setParentEmail] = useState(account?.email ?? "");
+  const [savedAddressId, setSavedAddressId] = useState<string>("");
   const [deliveryAddress, setDeliveryAddress] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<"CARD" | "COD">("COD");
+
+  function selectSavedChild(id: string) {
+    setSavedChildId(id);
+    const child = account?.children.find((c) => String(c.id) === id);
+    if (child) {
+      setChildName(child.fullName);
+      setChildClass(child.classSection ?? "");
+    }
+  }
+
+  function selectSavedAddress(id: string) {
+    setSavedAddressId(id);
+    const address = account?.addresses.find((a) => String(a.id) === id);
+    if (address) setDeliveryAddress(address.line);
+  }
 
   const [state, formAction, pending] = useActionState<CheckoutState | undefined, FormData>(createOrderAction, undefined);
 
@@ -79,7 +106,7 @@ export default function Configurator({
   if (step === "review") {
     return (
       <div className="min-h-screen bg-neutral-50">
-        <SiteHeader />
+        <SiteHeader customerName={account?.name} />
         <div className="mx-auto max-w-xl px-6 py-16">
           <button onClick={() => setStep("configure")} className="text-xs text-neutral-400 hover:text-neutral-700">
             ← Back to kit
@@ -158,15 +185,32 @@ export default function Configurator({
                   className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
                 />
                 {delivery === "HOME" && (
-                  <textarea
-                    name="delivery_address"
-                    value={deliveryAddress}
-                    onChange={(e) => setDeliveryAddress(e.target.value)}
-                    required
-                    placeholder="Delivery address"
-                    rows={2}
-                    className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
-                  />
+                  <>
+                    {account && account.addresses.length > 0 && (
+                      <select
+                        value={savedAddressId}
+                        onChange={(e) => selectSavedAddress(e.target.value)}
+                        className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+                      >
+                        <option value="">Enter new address...</option>
+                        {account.addresses.map((a) => (
+                          <option key={a.id} value={a.id}>
+                            {a.label ? `${a.label} — ` : ""}
+                            {a.line}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                    <textarea
+                      name="delivery_address"
+                      value={deliveryAddress}
+                      onChange={(e) => setDeliveryAddress(e.target.value)}
+                      required
+                      placeholder="Delivery address"
+                      rows={2}
+                      className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+                    />
+                  </>
                 )}
               </div>
             </div>
@@ -328,6 +372,21 @@ export default function Configurator({
               <p className="text-sm font-medium text-neutral-900">Child details</p>
               <p className="text-xs text-neutral-400">Required for labelling and school batch delivery.</p>
               <div className="mt-2 space-y-2">
+                {account && account.children.length > 0 && (
+                  <select
+                    value={savedChildId}
+                    onChange={(e) => selectSavedChild(e.target.value)}
+                    className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+                  >
+                    <option value="">Enter new child...</option>
+                    {account.children.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.fullName}
+                        {c.classSection ? ` · ${c.classSection}` : ""}
+                      </option>
+                    ))}
+                  </select>
+                )}
                 <input
                   value={childName}
                   onChange={(e) => setChildName(e.target.value)}

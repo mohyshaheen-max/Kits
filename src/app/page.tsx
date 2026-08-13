@@ -2,6 +2,7 @@ import Link from "next/link";
 import { eq, asc, sql } from "drizzle-orm";
 import { getDb } from "@/db";
 import { schools, kits } from "@/db/schema";
+import { getCurrentCustomer } from "@/lib/customer-session";
 import SiteHeader from "@/components/site/header";
 import SiteFooter from "@/components/site/footer";
 
@@ -17,19 +18,20 @@ const TIER_STYLE: Record<string, string> = {
 
 export default async function Home() {
   const db = getDb();
-  const [activeSchools, kitCounts] = await Promise.all([
+  const [activeSchools, kitCounts, customer] = await Promise.all([
     db.select().from(schools).where(eq(schools.status, "active")).orderBy(asc(schools.name)),
     db
       .select({ schoolId: kits.schoolId, n: sql<number>`count(*)` })
       .from(kits)
       .where(eq(kits.status, "live"))
       .groupBy(kits.schoolId),
+    getCurrentCustomer(),
   ]);
   const kitCountBySchool = Object.fromEntries(kitCounts.map((k) => [k.schoolId, k.n]));
 
   return (
     <div className="min-h-screen bg-neutral-50">
-      <SiteHeader />
+      <SiteHeader customerName={customer?.name} />
 
       <section className="bg-gradient-to-b from-indigo-50 to-neutral-50 px-6 py-20">
         <div className="mx-auto max-w-3xl text-center">

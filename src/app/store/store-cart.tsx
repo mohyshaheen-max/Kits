@@ -9,18 +9,43 @@ import SiteFooter from "@/components/site/footer";
 
 type Sku = { id: number; name: string; category: string; brand: string | null; unitPrice: number };
 
-export default function StoreCart({ items }: { items: Sku[] }) {
+type Account = {
+  name: string;
+  phone: string | null;
+  email: string | null;
+  children: { id: number; fullName: string; classSection: string | null }[];
+  addresses: { id: number; label: string | null; line: string }[];
+} | null;
+
+export default function StoreCart({ items, account }: { items: Sku[]; account: Account }) {
   const [step, setStep] = useState<"browse" | "checkout">("browse");
   const [cart, setCart] = useState<Record<number, number>>({});
   const [labeling, setLabeling] = useState(false);
 
-  const [parentName, setParentName] = useState("");
-  const [parentPhone, setParentPhone] = useState("");
-  const [parentEmail, setParentEmail] = useState("");
+  const [parentName, setParentName] = useState(account?.name ?? "");
+  const [parentPhone, setParentPhone] = useState(account?.phone ?? "");
+  const [parentEmail, setParentEmail] = useState(account?.email ?? "");
+  const [savedChildId, setSavedChildId] = useState("");
   const [childName, setChildName] = useState("");
   const [childClass, setChildClass] = useState("");
+  const [savedAddressId, setSavedAddressId] = useState("");
   const [deliveryAddress, setDeliveryAddress] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<"CARD" | "COD">("COD");
+
+  function selectSavedChild(id: string) {
+    setSavedChildId(id);
+    const child = account?.children.find((c) => String(c.id) === id);
+    if (child) {
+      setChildName(child.fullName);
+      setChildClass(child.classSection ?? "");
+    }
+  }
+
+  function selectSavedAddress(id: string) {
+    setSavedAddressId(id);
+    const address = account?.addresses.find((a) => String(a.id) === id);
+    if (address) setDeliveryAddress(address.line);
+  }
 
   const [state, formAction, pending] = useActionState<CheckoutState | undefined, FormData>(
     createGeneralOrderAction,
@@ -61,7 +86,7 @@ export default function StoreCart({ items }: { items: Sku[] }) {
 
     return (
       <div className="min-h-screen bg-neutral-50">
-        <SiteHeader />
+        <SiteHeader customerName={account?.name} />
         <div className="mx-auto max-w-xl px-6 py-16">
           <button onClick={() => setStep("browse")} className="text-xs text-neutral-400 hover:text-neutral-700">
             ← Back to store
@@ -135,6 +160,21 @@ export default function StoreCart({ items }: { items: Sku[] }) {
                   placeholder="Email (optional)"
                   className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
                 />
+                {account && account.addresses.length > 0 && (
+                  <select
+                    value={savedAddressId}
+                    onChange={(e) => selectSavedAddress(e.target.value)}
+                    className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+                  >
+                    <option value="">Enter new address...</option>
+                    {account.addresses.map((a) => (
+                      <option key={a.id} value={a.id}>
+                        {a.label ? `${a.label} — ` : ""}
+                        {a.line}
+                      </option>
+                    ))}
+                  </select>
+                )}
                 <textarea
                   name="delivery_address"
                   value={deliveryAddress}
@@ -262,6 +302,21 @@ export default function StoreCart({ items }: { items: Sku[] }) {
             <div>
               <p className="text-sm font-medium text-neutral-900">Child details</p>
               <div className="mt-2 space-y-2">
+                {account && account.children.length > 0 && (
+                  <select
+                    value={savedChildId}
+                    onChange={(e) => selectSavedChild(e.target.value)}
+                    className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+                  >
+                    <option value="">Enter new child...</option>
+                    {account.children.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.fullName}
+                        {c.classSection ? ` · ${c.classSection}` : ""}
+                      </option>
+                    ))}
+                  </select>
+                )}
                 <input
                   value={childName}
                   onChange={(e) => setChildName(e.target.value)}
