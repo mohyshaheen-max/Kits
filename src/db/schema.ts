@@ -73,10 +73,23 @@ export const gradesRelations = relations(grades, ({ one, many }) => ({
 // SKU catalogue
 // ---------------------------------------------------------------------------
 
+// Products are the "family" a shopper browses (e.g. "Colour pencils",
+// "Glue stick") — skus below are its purchasable variants (pack size,
+// brand, colour). Every sku belongs to exactly one product; a product
+// with only one sku just renders as a plain item, no variant pickers.
+export const products = sqliteTable("products", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  name: text("name").notNull(),
+  nameAr: text("name_ar"),
+  category: text("category").notNull(),
+  active: integer("active", { mode: "boolean" }).notNull().default(true),
+});
+
 export const skus = sqliteTable(
   "skus",
   {
     id: integer("id").primaryKey({ autoIncrement: true }),
+    productId: integer("product_id").references(() => products.id),
     code: text("code").notNull(),
     name: text("name").notNull(),
     nameAr: text("name_ar"),
@@ -94,6 +107,14 @@ export const skus = sqliteTable(
   },
   (t) => [uniqueIndex("skus_code_idx").on(t.code)]
 );
+
+export const productsRelations = relations(products, ({ many }) => ({
+  skus: many(skus),
+}));
+
+export const skusRelations = relations(skus, ({ one }) => ({
+  product: one(products, { fields: [skus.productId], references: [products.id] }),
+}));
 
 // ---------------------------------------------------------------------------
 // School lists — what the school published (may include things KITS

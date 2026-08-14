@@ -2,18 +2,23 @@
 
 import { useActionState } from "react";
 import { Field, inputClass } from "@/components/admin/form-controls";
-import type { skus } from "@/db/schema";
+import type { skus, products } from "@/db/schema";
 
 type Sku = typeof skus.$inferSelect;
+type Product = typeof products.$inferSelect;
 type FormState = { error?: string } | undefined;
 
 export default function SkuForm({
   sku,
+  products,
+  defaultProductId,
   action,
   submitLabel,
   pendingLabel,
 }: {
   sku?: Sku;
+  products: Product[];
+  defaultProductId?: number;
   action: (state: FormState, formData: FormData) => Promise<FormState>;
   submitLabel: string;
   pendingLabel: string;
@@ -35,8 +40,23 @@ export default function SkuForm({
             className={`${inputClass} font-mono`}
           />
         </Field>
-        <Field label="Category" htmlFor="category">
-          <input id="category" name="category" defaultValue={sku?.category} required className={inputClass} />
+        <Field label="Product" htmlFor="product_id" hint="Which product this is a variant of.">
+          <select
+            id="product_id"
+            name="product_id"
+            defaultValue={sku?.productId ?? defaultProductId ?? ""}
+            required
+            className={inputClass}
+          >
+            <option value="" disabled>
+              Select a product...
+            </option>
+            {products.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name} ({p.category})
+              </option>
+            ))}
+          </select>
         </Field>
       </div>
 

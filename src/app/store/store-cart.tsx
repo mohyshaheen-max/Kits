@@ -5,8 +5,7 @@ import { createGeneralOrderAction, type CheckoutState } from "@/lib/actions/orde
 import { LABELING_FEE, DELIVERY_FEE } from "@/lib/pricing";
 import SiteHeader from "@/components/site/header";
 import SiteFooter from "@/components/site/footer";
-
-type Sku = { id: number; name: string; category: string; brand: string | null; unitPrice: number };
+import ProductPicker, { type StoreProduct, type Variant } from "./product-picker";
 
 type Account = {
   name: string;
@@ -16,7 +15,7 @@ type Account = {
   addresses: { id: number; label: string | null; line: string }[];
 } | null;
 
-export default function StoreCart({ items, account }: { items: Sku[]; account: Account }) {
+export default function StoreCart({ products, account }: { products: StoreProduct[]; account: Account }) {
   const [step, setStep] = useState<"browse" | "checkout">("browse");
   const [cart, setCart] = useState<Record<number, number>>({});
   const [labeling, setLabeling] = useState(false);
@@ -54,41 +53,47 @@ export default function StoreCart({ items, account }: { items: Sku[]; account: A
     undefined
   );
 
+  const variantById = useMemo(() => {
+    const map = new Map<number, Variant & { productName: string }>();
+    for (const p of products) for (const v of p.variants) map.set(v.id, { ...v, productName: p.name });
+    return map;
+  }, [products]);
+
   const categories = useMemo(() => {
     const counts = new Map<string, number>();
-    for (const item of items) counts.set(item.category, (counts.get(item.category) ?? 0) + 1);
+    for (const p of products) counts.set(p.category, (counts.get(p.category) ?? 0) + 1);
     return Array.from(counts.entries()).sort((a, b) => a[0].localeCompare(b[0]));
-  }, [items]);
+  }, [products]);
 
   const filtersActive = search.trim().length > 0 || category !== "" || sortBy !== "name";
 
-  const filteredItems = useMemo(() => {
-    let result = items;
-    if (category) result = result.filter((i) => i.category === category);
+  const filteredProducts = useMemo(() => {
+    let result = products;
+    if (category) result = result.filter((p) => p.category === category);
     const q = search.trim().toLowerCase();
     if (q) {
       result = result.filter(
-        (i) => i.name.toLowerCase().includes(q) || (i.brand ?? "").toLowerCase().includes(q)
+        (p) => p.name.toLowerCase().includes(q) || p.variants.some((v) => (v.brand ?? "").toLowerCase().includes(q))
       );
     }
     const sorted = [...result];
     if (sortBy === "name") sorted.sort((a, b) => a.name.localeCompare(b.name));
-    else if (sortBy === "price-asc") sorted.sort((a, b) => a.unitPrice - b.unitPrice);
-    else if (sortBy === "price-desc") sorted.sort((a, b) => b.unitPrice - a.unitPrice);
+    else if (sortBy === "price-asc") sorted.sort((a, b) => a.variants[0].unitPrice - b.variants[0].unitPrice);
+    else if (sortBy === "price-desc") sorted.sort((a, b) => b.variants[0].unitPrice - a.variants[0].unitPrice);
     return sorted;
-  }, [items, category, search, sortBy]);
+  }, [products, category, search, sortBy]);
 
   // Grouped-by-category browse view only in the neutral default state; any
   // active search, sort, or category filter collapses to a flat result list.
   const grouped = useMemo(() => {
-    if (filtersActive) return [] as [string, Sku[]][];
-    const map = new Map<string, Sku[]>();
-    for (const item of filteredItems) {
-      if (!map.has(item.category)) map.set(item.category, []);
-      map.get(item.category)!.push(item);
+    if (filtersActive) return [] as [string, StoreProduct[]][];
+    const map = new Map<string, StoreProduct[]>();
+    for (const p of filteredProducts) {
+      if (!map.has(p.category)) map.set(p.category, []);
+      map.get(p.category)!.push(p);
     }
     return Array.from(map.entries());
-  }, [filteredItems, filtersActive]);
+  }, [filteredProducts, filtersActive]);
 
   function clearFilters() {
     setSearch("");
@@ -100,8 +105,9 @@ export default function StoreCart({ items, account }: { items: Sku[]; account: A
     () =>
       Object.entries(cart)
         .filter(([, qty]) => qty > 0)
-        .map(([id, qty]) => ({ sku: items.find((i) => i.id === Number(id))!, qty })),
-    [cart, items]
+        .map(([id, qty]) => ({ sku: variantById.get(Number(id))!, qty }))
+        .filter((l) => l.sku),
+    [cart, variantById]
   );
 
   const itemsTotal = cartLines.reduce((sum, l) => sum + l.qty * l.sku.unitPrice, 0);
@@ -303,7 +309,7 @@ export default function StoreCart({ items, account }: { items: Sku[]; account: A
                 category === "" ? "bg-teal-100 text-teal-800" : "border border-line text-ink-600 hover:bg-teal-050"
               }`}
             >
-              All <span className="font-mono">({items.length})</span>
+              All <span className="font-mono">({products.length})</span>
             </button>
             {categories.map(([catName, count]) => (
               <button
@@ -323,7 +329,8 @@ export default function StoreCart({ items, account }: { items: Sku[]; account: A
 
           <div className="mt-4 flex items-center justify-between">
             <p className="text-xs text-ink-400">
-              <span className="font-mono">{filteredItems.length}</span> item{filteredItems.length === 1 ? "" : "s"}
+              <span className="font-mono">{filteredProducts.length}</span> item
+              {filteredProducts.length === 1 ? "" : "s"}
             </p>
             {filtersActive && (
               <button type="button" onClick={clearFilters} className="text-xs font-medium text-teal-700 hover:underline">
@@ -333,7 +340,7 @@ export default function StoreCart({ items, account }: { items: Sku[]; account: A
           </div>
 
           <div className="mt-4 space-y-6">
-            {filteredItems.length === 0 && (
+            {filteredProducts.length === 0 && (
               <div className="rounded-md border border-line bg-surface p-8 text-center">
                 <p className="text-sm font-medium text-ink-900">No items match your search.</p>
                 <p className="mt-1 text-sm text-ink-400">Try a different term or clear your filters.</p>
@@ -344,19 +351,19 @@ export default function StoreCart({ items, account }: { items: Sku[]; account: A
             )}
 
             {filtersActive
-              ? filteredItems.length > 0 && (
+              ? filteredProducts.length > 0 && (
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    {filteredItems.map((item) => (
-                      <StoreItemRow key={item.id} item={item} qty={cart[item.id] ?? 0} onQtyChange={setQty} showCategory />
+                    {filteredProducts.map((p) => (
+                      <ProductPicker key={p.id} product={p} cart={cart} onQtyChange={setQty} />
                     ))}
                   </div>
                 )
-              : grouped.map(([catName, categoryItems]) => (
+              : grouped.map(([catName, categoryProducts]) => (
                   <div key={catName}>
                     <h2 className="mb-3 text-xs font-medium tracking-wide text-ink-400 uppercase">{catName}</h2>
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                      {categoryItems.map((item) => (
-                        <StoreItemRow key={item.id} item={item} qty={cart[item.id] ?? 0} onQtyChange={setQty} />
+                      {categoryProducts.map((p) => (
+                        <ProductPicker key={p.id} product={p} cart={cart} onQtyChange={setQty} />
                       ))}
                     </div>
                   </div>
@@ -450,44 +457,3 @@ export default function StoreCart({ items, account }: { items: Sku[]; account: A
   );
 }
 
-function StoreItemRow({
-  item,
-  qty,
-  onQtyChange,
-  showCategory,
-}: {
-  item: Sku;
-  qty: number;
-  onQtyChange: (skuId: number, qty: number) => void;
-  showCategory?: boolean;
-}) {
-  return (
-    <div className="flex items-center justify-between rounded-md border border-line bg-surface p-4">
-      <div>
-        <p className="text-sm font-medium text-ink-900">{item.name}</p>
-        <p className="text-xs text-ink-400">
-          <span className="font-mono">{item.unitPrice.toFixed(2)} EGP</span>
-          {showCategory ? ` · ${item.category}` : ""}
-          {item.brand ? ` · ${item.brand}` : ""}
-        </p>
-      </div>
-      <div className="flex items-center gap-2">
-        <button
-          type="button"
-          onClick={() => onQtyChange(item.id, qty - 1)}
-          className="h-7 w-7 rounded-sm border border-line text-sm text-ink-600 hover:bg-canvas"
-        >
-          −
-        </button>
-        <span className="w-6 text-center font-mono text-sm text-ink-900">{qty}</span>
-        <button
-          type="button"
-          onClick={() => onQtyChange(item.id, qty + 1)}
-          className="h-7 w-7 rounded-sm border border-line text-sm text-ink-600 hover:bg-canvas"
-        >
-          +
-        </button>
-      </div>
-    </div>
-  );
-}
